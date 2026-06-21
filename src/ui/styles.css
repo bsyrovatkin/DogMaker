@@ -35,6 +35,13 @@ body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 .swatch { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--ink); }
 .size-label { font-size: 12px; font-weight: 600; color: #7a6a55; }
 
+/* Phone: cap the preview so options always have usable height */
+@media (max-width: 719px) {
+  .stage { flex: 0 1 auto; max-height: 58dvh; }
+  .stage-main { min-height: 0; }
+  .options-panel { flex: 1 1 40dvh; }
+}
+
 /* Tablet / desktop: two columns, dog fixed left, options scroll right */
 @media (min-width: 720px) {
   .app { flex-direction: row; }
