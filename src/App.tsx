@@ -2,8 +2,13 @@ import { useDogConfig } from './state/useDogConfig'
 import { StagePanel } from './components/StagePanel'
 import { OptionsPanel } from './components/OptionsPanel'
 import { exportSticker } from './export/exportSticker'
+import { Gallery } from './components/Gallery'
 
 export default function App() {
+  if (typeof window !== 'undefined' && window.location.hash.includes('gallery')) {
+    return <Gallery />
+  }
+
   const { config, select, randomize, shareUrl } = useDogConfig()
 
   async function handleShare() {
