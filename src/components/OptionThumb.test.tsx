@@ -20,10 +20,20 @@ describe('OptionThumb', () => {
     expect(getByText('Big')).toBeTruthy()
   })
 
-  it('renders an svg for a part option', () => {
+  it('previews the composed dog at full frame for a body/ears part', () => {
     const { container } = render(
-      <OptionThumb categoryKey="ears" option={{ id: 'e', label: 'E', svg: '<circle cx="64" cy="80" r="16" fill="currentColor"/>' }} />,
+      <OptionThumb categoryKey="ears" option={{ id: 'ears-round', label: 'Round' }} />,
     )
-    expect(container.querySelector('svg')).toBeTruthy()
+    const svg = container.querySelector('svg')
+    expect(svg).toBeTruthy()
+    expect(svg!.getAttribute('viewBox')).toBe('-30 -10 260 260')
+  })
+
+  it('crops the thumbnail to the face for eyes/nose/mouth', () => {
+    const { container } = render(
+      <OptionThumb categoryKey="eyes" option={{ id: 'eyes-dots', label: 'Dots' }} />,
+    )
+    const svg = container.querySelector('svg')
+    expect(svg!.getAttribute('viewBox')).toBe('46 44 108 108')
   })
 })

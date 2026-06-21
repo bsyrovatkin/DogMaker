@@ -5,10 +5,15 @@ import { colorHex, getOption, LAYER_CATEGORY_KEYS, sizeScale } from '../catalog'
 export interface ComposeOptions {
   /** Output pixel width and height (square). Default 512. */
   size?: number
+  /** SVG viewBox override — e.g. to crop a thumbnail to the face. Defaults to the whole dog. */
+  viewBox?: string
 }
+
+const FULL_VIEWBOX = '-30 -10 260 260'
 
 export function composeSvg(config: DogConfig, options: ComposeOptions = {}): string {
   const size = options.size ?? 512
+  const viewBox = options.viewBox ?? FULL_VIEWBOX
   const color = colorHex(config)
   const scale = sizeScale(config)
   const layers = LAYER_CATEGORY_KEYS
@@ -16,7 +21,7 @@ export function composeSvg(config: DogConfig, options: ComposeOptions = {}): str
     .join('')
 
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-30 -10 260 260" ` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" ` +
     `width="${size}" height="${size}">` +
     `<defs>${FILTER_DEFS}</defs>` +
     `<g filter="url(#dm-rough)" stroke="#2e2018" stroke-width="3" ` +
