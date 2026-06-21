@@ -10,8 +10,6 @@ export function buildExportSvg(config: DogConfig): string {
 export async function svgToPngBlob(svg: string, size = STICKER_SIZE): Promise<Blob> {
   const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)
   const img = new Image()
-  img.width = size
-  img.height = size
   await new Promise<void>((resolve, reject) => {
     img.onload = () => resolve()
     img.onerror = () => reject(new Error('Failed to load SVG image'))
