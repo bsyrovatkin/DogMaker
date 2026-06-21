@@ -5,11 +5,11 @@ import { exportSticker } from './export/exportSticker'
 import { Gallery } from './components/Gallery'
 
 export default function App() {
+  const { config, select, randomize, shareUrl } = useDogConfig()
+
   if (typeof window !== 'undefined' && window.location.hash.includes('gallery')) {
     return <Gallery />
   }
-
-  const { config, select, randomize, shareUrl } = useDogConfig()
 
   async function handleShare() {
     const url = shareUrl()

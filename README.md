@@ -28,3 +28,6 @@ Visit `#gallery` (e.g. `http://localhost:5173/DogMaker/#gallery`) to QA every op
    recolorable shapes use `fill="currentColor"`, ink uses `fill="#2e2018"`).
 2. Register it as an `Option` in the right `Category` in `src/catalog/index.ts`.
 3. It appears in the UI automatically and composites with everything else.
+4. If you are adding a brand-new *layer category* (not just new options to an existing one),
+   also add its key to `LAYER_CATEGORY_KEYS` in `src/catalog/index.ts` in the correct z-order.
+   (Adding options to an existing category requires no such change.)
