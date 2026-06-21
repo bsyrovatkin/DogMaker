@@ -14,11 +14,11 @@ export default function App() {
   async function handleShare() {
     const url = shareUrl()
     const nav = navigator as Navigator & { share?: (d: { url: string; title?: string }) => Promise<void> }
-    try {
-      if (nav.share) await nav.share({ url, title: 'My DogMaker dog' })
-      else { await navigator.clipboard.writeText(url); alert('Link copied!') }
-    } catch {
-      /* cancelled */
+    if (nav.share) {
+      try { await nav.share({ url, title: 'My DogMaker dog' }) } catch { /* cancelled */ }
+    } else {
+      try { await navigator.clipboard.writeText(url); alert('Link copied!') }
+      catch { alert('Could not copy the link.') }
     }
   }
 
