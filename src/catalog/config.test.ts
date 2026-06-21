@@ -9,6 +9,10 @@ describe('config helpers', () => {
     for (const k of CATEGORY_KEYS) expect(isValidOptionId(k, cfg[k])).toBe(true)
   })
 
+  it('defaultConfig uses size-normal, not size-tiny', () => {
+    expect(defaultConfig().size).toBe('size-normal')
+  })
+
   it('sanitizeConfig replaces unknown ids with defaults but keeps valid ones', () => {
     const cfg = sanitizeConfig({ ears: 'ears-pointy', nose: 'bogus' })
     expect(cfg.ears).toBe('ears-pointy')

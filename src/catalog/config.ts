@@ -3,7 +3,7 @@ import { CATEGORY_KEYS, getCategory, isValidOptionId } from './index'
 
 export function defaultConfig(): DogConfig {
   const cfg = {} as DogConfig
-  for (const k of CATEGORY_KEYS) cfg[k] = getCategory(k).options[0].id
+  for (const k of CATEGORY_KEYS) cfg[k] = getCategory(k).defaultId ?? getCategory(k).options[0].id
   return cfg
 }
 

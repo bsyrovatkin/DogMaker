@@ -20,6 +20,7 @@ export const catalog: Catalog = [
   },
   {
     key: 'size', label: 'Size',
+    defaultId: 'size-normal',
     options: [
       { id: 'size-tiny', label: 'Tiny', scale: 0.62 },
       { id: 'size-small', label: 'Small', scale: 0.8 },

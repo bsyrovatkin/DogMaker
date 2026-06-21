@@ -21,6 +21,8 @@ export interface Category {
   /** Layer order for parts that draw svg; undefined for size/color (no layer). */
   zIndex?: number
   options: Option[]
+  /** Option id to use as the default; falls back to the first option. */
+  defaultId?: string
 }
 
 export type Catalog = Category[]
