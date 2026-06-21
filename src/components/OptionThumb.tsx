@@ -5,8 +5,7 @@ const THUMB_COLOR = '#c98a5e'
 
 export function OptionThumb({ categoryKey, option }: { categoryKey: CategoryKey; option: Option }) {
   if (categoryKey === 'color') {
-    const hex = option.color ?? '#c98a5e'
-    return <span className="swatch" style={{ background: `linear-gradient(${hex}, ${hex})` }} />
+    return <span className="swatch" style={{ background: option.color }} />
   }
   if (categoryKey === 'size') {
     return <span className="size-label">{option.label}</span>

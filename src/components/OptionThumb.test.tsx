@@ -10,7 +10,7 @@ describe('OptionThumb', () => {
     )
     const swatch = container.querySelector('.swatch') as HTMLElement
     expect(swatch).toBeTruthy()
-    expect(swatch.style.background).toMatch(/#123456/i)
+    expect(swatch.style.background).toContain('rgb(18, 52, 86)')
   })
 
   it('renders a label for a size option', () => {
