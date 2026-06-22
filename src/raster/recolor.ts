@@ -18,7 +18,7 @@ export function hexToRgb(hex: string): [number, number, number] {
   return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)]
 }
 
-export type SpotPattern = 'blobs' | 'dots' | 'patches' | 'splash'
+export type SpotPattern = 'blobs' | 'dots' | 'patches' | 'splash' | 'stripes' | 'cheetah' | 'hearts' | 'stars'
 
 export interface SpotOpts {
   hex: string
@@ -72,6 +72,73 @@ function spotMask(w: number, h: number, pattern: SpotPattern, seed: number): Uin
         const r = (0.018 + rnd() * 0.034) * w
         stamp(cx + Math.cos(ang) * d, cy + Math.sin(ang) * d, r, r * (0.7 + rnd() * 0.6))
       }
+    }
+  } else if (pattern === 'stripes') {
+    // horizontal tiger stripes across the body
+    const yMin = 0.42 * h, yMax = 0.85 * h
+    let cy = yMin + rnd() * 0.05 * h
+    while (cy < yMax) {
+      const thick = (0.018 + rnd() * 0.022) * h
+      const halfW = (0.22 + rnd() * 0.14) * w
+      const cx = w / 2 + (rnd() - 0.5) * 0.06 * w
+      for (let y = Math.max(0, Math.floor(cy - thick)); y <= Math.min(h - 1, Math.ceil(cy + thick)); y++) {
+        const t = (y - cy) / thick // -1..1 across the stripe
+        const halfHere = halfW * Math.sqrt(Math.max(0, 1 - t * t)) // slight tapering
+        const x0 = Math.max(0, Math.floor(w / 2 - halfHere + (cx - w / 2)))
+        const x1 = Math.min(w - 1, Math.ceil(w / 2 + halfHere + (cx - w / 2)))
+        for (let x = x0; x <= x1; x++) m[y * w + x] = 1
+      }
+      cy += thick * 2 + (0.025 + rnd() * 0.025) * h
+    }
+  } else if (pattern === 'cheetah') {
+    // many small ring-shaped spots (open centres) — cheetah rosettes
+    for (let i = 0; i < 22; i++) {
+      const cx = (0.2 + rnd() * 0.6) * w, cy = (0.42 + rnd() * 0.43) * h
+      const r = (0.025 + rnd() * 0.018) * w
+      if (!inBody(cy)) continue
+      const x0 = Math.max(0, Math.floor(cx - r - 1)), x1 = Math.min(w - 1, Math.ceil(cx + r + 1))
+      const y0 = Math.max(0, Math.floor(cy - r - 1)), y1 = Math.min(h - 1, Math.ceil(cy + r + 1))
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+        const dx = x - cx, dy = y - cy, d = Math.sqrt(dx * dx + dy * dy)
+        if (d <= r && d >= r * 0.55) m[y * w + x] = 1 // ring (annulus)
+      }
+    }
+  } else if (pattern === 'hearts') {
+    // implicit heart curve: (u² + v² - 1)³ ≤ u²·v³
+    const stampHeart = (cx: number, cy: number, sz: number) => {
+      const r = sz * 1.3
+      const x0 = Math.max(0, Math.floor(cx - r)), x1 = Math.min(w - 1, Math.ceil(cx + r))
+      const y0 = Math.max(0, Math.floor(cy - r)), y1 = Math.min(h - 1, Math.ceil(cy + r))
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+        const u = (x - cx) / sz, v = -(y - cy) / sz + 0.15
+        const a = u * u + v * v - 1
+        if (a * a * a - u * u * v * v * v <= 0) m[y * w + x] = 1
+      }
+    }
+    for (let i = 0; i < 8; i++) {
+      const cx = (0.22 + rnd() * 0.56) * w, cy = (0.45 + rnd() * 0.38) * h
+      const sz = (0.05 + rnd() * 0.025) * w
+      stampHeart(cx, cy, sz)
+    }
+  } else if (pattern === 'stars') {
+    // 5-point star via polar radius wave
+    const stampStar = (cx: number, cy: number, r: number, phase: number) => {
+      const x0 = Math.max(0, Math.floor(cx - r)), x1 = Math.min(w - 1, Math.ceil(cx + r))
+      const y0 = Math.max(0, Math.floor(cy - r)), y1 = Math.min(h - 1, Math.ceil(cy + r))
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+        const dx = x - cx, dy = y - cy, d = Math.sqrt(dx * dx + dy * dy)
+        if (d > r) continue
+        const ang = Math.atan2(dy, dx) + phase
+        const t = ((ang / Math.PI * 2.5) + 100) % 1 // 0..1 sawtooth
+        const f = Math.abs(t - 0.5) * 2 // 0 at points, 1 at inner notches
+        const rmax = r * (0.42 + 0.58 * (1 - f))
+        if (d <= rmax) m[y * w + x] = 1
+      }
+    }
+    for (let i = 0; i < 9; i++) {
+      const cx = (0.22 + rnd() * 0.56) * w, cy = (0.44 + rnd() * 0.4) * h
+      const r = (0.05 + rnd() * 0.025) * w
+      stampStar(cx, cy, r, rnd() * Math.PI * 2)
     }
   } else {
     // 'blobs' (default) — medium evenly-spread blobs

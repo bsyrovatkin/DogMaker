@@ -131,7 +131,7 @@ export interface PortraitSpec {
   spotColor?: string
   spotSeed?: number
   /** Spot pattern shape (see SpotPattern). Defaults to 'blobs'. */
-  spotPattern?: 'blobs' | 'dots' | 'patches' | 'splash'
+  spotPattern?: 'blobs' | 'dots' | 'patches' | 'splash' | 'stripes' | 'cheetah' | 'hearts' | 'stars'
   eyes?: HTMLImageElement
   eyeAnchor?: Anchor
   muzzle?: HTMLImageElement

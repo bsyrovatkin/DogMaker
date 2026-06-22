@@ -16,10 +16,16 @@ export const EARS: Opt[] = [
 ]
 
 export const COLORS: { hex: string; label: string }[] = [
+  // — naturalistic —
   { label: 'Classic', hex: '#c98a5e' }, { label: 'Chocolate', hex: '#6b4a2f' }, { label: 'Golden', hex: '#e0aa55' }, { label: 'Black', hex: '#4b443c' },
-  { label: 'Cream', hex: '#ead8bd' }, { label: 'Caramel', hex: '#a9713f' }, { label: 'Apricot', hex: '#dd9a6e' }, { label: 'Fawn', hex: '#cbab83' }, // note: 'Black' lightened to a charcoal so the face reads
+  { label: 'Cream', hex: '#ead8bd' }, { label: 'Caramel', hex: '#a9713f' }, { label: 'Apricot', hex: '#dd9a6e' }, { label: 'Fawn', hex: '#cbab83' },
   { label: 'Red', hex: '#b15a36' }, { label: 'Grey', hex: '#9a9a9a' }, { label: 'White', hex: '#f2ece2' }, { label: 'Silver', hex: '#8f99a6' },
+  { label: 'Espresso', hex: '#3d2a1a' }, { label: 'Mustard', hex: '#c7a13a' }, { label: 'Slate', hex: '#6f7782' }, { label: 'Sand', hex: '#d8c399' },
+  // — pastels —
   { label: 'Pink', hex: '#e6a0b0' }, { label: 'Mint', hex: '#9fccb6' }, { label: 'Sky', hex: '#9db9dd' }, { label: 'Lavender', hex: '#b3a3d1' },
+  // — bright / silly —
+  { label: 'Bubblegum', hex: '#ff8fb1' }, { label: 'Lime', hex: '#bfe05f' }, { label: 'Tangerine', hex: '#ff9b3d' }, { label: 'Sunshine', hex: '#ffd84d' },
+  { label: 'Aqua', hex: '#5fd0d0' }, { label: 'Plum', hex: '#9266b8' }, { label: 'Coral', hex: '#ff7e63' }, { label: 'Hot pink', hex: '#ff4d8d' },
 ]
 
 /** Spot pattern shapes — applied as a 2nd colour on the body. `null` = no spots at all. */
@@ -29,6 +35,10 @@ export const SPOT_PATTERNS: { id: string | null; label: string }[] = [
   { id: 'dots', label: 'Dots' },
   { id: 'patches', label: 'Patches' },
   { id: 'splash', label: 'Splash' },
+  { id: 'stripes', label: 'Stripes' },
+  { id: 'cheetah', label: 'Cheetah' },
+  { id: 'hearts', label: 'Hearts' },
+  { id: 'stars', label: 'Stars' },
 ]
 
 /** Available spot colours. Picked separately from the pattern. */

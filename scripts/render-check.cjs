@@ -105,6 +105,59 @@ function spotMask(w, h, pattern, seed) {
       const cx = (0.22 + rnd() * 0.56) * w, cy = (0.45 + rnd() * 0.38) * h
       for (let j = 0; j < 9; j++) { const ang = rnd() * Math.PI * 2, d = rnd() * 0.09 * w, r = (0.018 + rnd() * 0.034) * w; stamp(cx + Math.cos(ang) * d, cy + Math.sin(ang) * d, r, r * (0.7 + rnd() * 0.6)) }
     }
+  } else if (pattern === 'stripes') {
+    const yMin = 0.42 * h, yMax = 0.85 * h
+    let cy = yMin + rnd() * 0.05 * h
+    while (cy < yMax) {
+      const thick = (0.018 + rnd() * 0.022) * h
+      const halfW = (0.22 + rnd() * 0.14) * w
+      const cx = w / 2 + (rnd() - 0.5) * 0.06 * w
+      for (let y = Math.max(0, Math.floor(cy - thick)); y <= Math.min(h - 1, Math.ceil(cy + thick)); y++) {
+        const t = (y - cy) / thick
+        const halfHere = halfW * Math.sqrt(Math.max(0, 1 - t * t))
+        const x0 = Math.max(0, Math.floor(w / 2 - halfHere + (cx - w / 2)))
+        const x1 = Math.min(w - 1, Math.ceil(w / 2 + halfHere + (cx - w / 2)))
+        for (let x = x0; x <= x1; x++) m[y * w + x] = 1
+      }
+      cy += thick * 2 + (0.025 + rnd() * 0.025) * h
+    }
+  } else if (pattern === 'cheetah') {
+    for (let i = 0; i < 22; i++) {
+      const cx = (0.2 + rnd() * 0.6) * w, cy = (0.42 + rnd() * 0.43) * h, r = (0.025 + rnd() * 0.018) * w
+      if (!inBody(cy)) continue
+      const x0 = Math.max(0, Math.floor(cx - r - 1)), x1 = Math.min(w - 1, Math.ceil(cx + r + 1))
+      const y0 = Math.max(0, Math.floor(cy - r - 1)), y1 = Math.min(h - 1, Math.ceil(cy + r + 1))
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+        const dx = x - cx, dy = y - cy, d = Math.sqrt(dx * dx + dy * dy)
+        if (d <= r && d >= r * 0.55) m[y * w + x] = 1
+      }
+    }
+  } else if (pattern === 'hearts') {
+    const stampHeart = (cx, cy, sz) => {
+      const r = sz * 1.3
+      const x0 = Math.max(0, Math.floor(cx - r)), x1 = Math.min(w - 1, Math.ceil(cx + r))
+      const y0 = Math.max(0, Math.floor(cy - r)), y1 = Math.min(h - 1, Math.ceil(cy + r))
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+        const u = (x - cx) / sz, v = -(y - cy) / sz + 0.15
+        const a = u * u + v * v - 1
+        if (a * a * a - u * u * v * v * v <= 0) m[y * w + x] = 1
+      }
+    }
+    for (let i = 0; i < 8; i++) { const cx = (0.22 + rnd() * 0.56) * w, cy = (0.45 + rnd() * 0.38) * h, sz = (0.05 + rnd() * 0.025) * w; stampHeart(cx, cy, sz) }
+  } else if (pattern === 'stars') {
+    const stampStar = (cx, cy, r, phase) => {
+      const x0 = Math.max(0, Math.floor(cx - r)), x1 = Math.min(w - 1, Math.ceil(cx + r))
+      const y0 = Math.max(0, Math.floor(cy - r)), y1 = Math.min(h - 1, Math.ceil(cy + r))
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+        const dx = x - cx, dy = y - cy, d = Math.sqrt(dx * dx + dy * dy); if (d > r) continue
+        const ang = Math.atan2(dy, dx) + phase
+        const t = ((ang / Math.PI * 2.5) + 100) % 1
+        const f = Math.abs(t - 0.5) * 2
+        const rmax = r * (0.42 + 0.58 * (1 - f))
+        if (d <= rmax) m[y * w + x] = 1
+      }
+    }
+    for (let i = 0; i < 9; i++) { const cx = (0.22 + rnd() * 0.56) * w, cy = (0.44 + rnd() * 0.4) * h, r = (0.05 + rnd() * 0.025) * w; stampStar(cx, cy, r, rnd() * Math.PI * 2) }
   } else {
     for (let i = 0; i < 11; i++) { const cx = (0.2 + rnd() * 0.6) * w, cy = (0.42 + rnd() * 0.43) * h, r = (0.035 + rnd() * 0.05) * w; stamp(cx, cy, r, r * (0.9 + rnd() * 0.2)) }
   }
@@ -392,7 +445,7 @@ function makeDog(o) {
 
 // === 4 spot patterns on one dog ===
 {
-  const patterns = ['blobs', 'dots', 'patches', 'splash']
+  const patterns = ['blobs', 'dots', 'patches', 'splash', 'stripes', 'cheetah', 'hearts', 'stars']
   const tiles = patterns.map((pat) => {
     const base = recolorBase(baseImg('curly-floppy'), '#ead8bd', '#6b4a2f', 11, pat)
     const c = canvasFor(base); placeBase(c, base)
@@ -400,12 +453,13 @@ function makeDog(o) {
     over(c.buf, c.W, c.H, inkPartImg('muzzle-smile'), MUZ)
     return c
   })
-  const Wt = tiles[0].W, Ht = tiles[0].H, gap = 12
-  const sheet = { buf: Buffer.alloc((Wt * 4 + gap * 3) * Ht * 4), W: Wt * 4 + gap * 3, H: Ht }
+  const Wt = tiles[0].W, Ht = tiles[0].H, gap = 12, cols = 4
+  const rows = Math.ceil(tiles.length / cols)
+  const sheet = { buf: Buffer.alloc((Wt * cols + gap * (cols - 1)) * (Ht * rows + gap * (rows - 1)) * 4), W: Wt * cols + gap * (cols - 1), H: Ht * rows + gap * (rows - 1) }
   tiles.forEach((t, k) => {
-    const ox = k * (Wt + gap)
+    const ox = (k % cols) * (Wt + gap), oy = ((k / cols) | 0) * (Ht + gap)
     for (let y = 0; y < Ht; y++) for (let x = 0; x < Wt; x++) {
-      const si = (y * Wt + x) * 4, di = (y * sheet.W + ox + x) * 4
+      const si = (y * Wt + x) * 4, di = ((oy + y) * sheet.W + (ox + x)) * 4
       sheet.buf[di] = t.buf[si]; sheet.buf[di + 1] = t.buf[si + 1]; sheet.buf[di + 2] = t.buf[si + 2]; sheet.buf[di + 3] = t.buf[si + 3]
     }
   })
