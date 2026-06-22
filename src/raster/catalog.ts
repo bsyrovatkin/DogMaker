@@ -45,12 +45,26 @@ export const SPOT_PATTERNS: { id: string | null; label: string }[] = [
 
 /** Available spot colours. Picked separately from the pattern. */
 export const SPOT_COLORS: { label: string; hex: string }[] = [
+  // — natural —
   { label: 'Brown', hex: '#6b4a2f' },
   { label: 'Caramel', hex: '#a9713f' },
   { label: 'Grey', hex: '#7d756e' },
   { label: 'Black', hex: '#2f2a26' },
   { label: 'Cream', hex: '#ead8bd' },
   { label: 'White', hex: '#f4ecdc' },
+  // — bright / silly —
+  { label: 'Pink', hex: '#ff8fb1' },
+  { label: 'Hot pink', hex: '#ff4d8d' },
+  { label: 'Blue', hex: '#5aa6e6' },
+  { label: 'Sky', hex: '#9db9dd' },
+  { label: 'Yellow', hex: '#ffd84d' },
+  { label: 'Orange', hex: '#ff9b3d' },
+  { label: 'Green', hex: '#7cc24a' },
+  { label: 'Mint', hex: '#7fd6b8' },
+  { label: 'Purple', hex: '#9266b8' },
+  { label: 'Aqua', hex: '#5fd0d0' },
+  { label: 'Coral', hex: '#ff7e63' },
+  { label: 'Red', hex: '#e24b4a' },
 ]
 
 export const EYES: Opt[] = [
