@@ -61,6 +61,20 @@ for (const fur of FURS) for (const ears of EARS) {
     if (y + 1 < h) st.push(p + w)
     if (y > 0) st.push(p - w)
   }
+  // Silky only: the checker (and the body's own light fill) shows through the sparse sketch everywhere,
+  // and squares trapped in the wispy fur gaps survive as little blocks sticking out of the edge. A clean
+  // wispy edge is just the DARK hairs against transparency — the light fill/checker between them at the
+  // periphery shouldn't be there. So near the transparent edge (within D), keep only dark strands and
+  // drop any light pixel; the SOLID core (no transparency within D) keeps its fill, so it stays solid.
+  if (fur === 'silky') {
+    const D = 14, LIGHT = 200
+    const tr = new Uint8Array(w * h)
+    for (let p = 0; p < w * h; p++) tr[p] = d[p * 4 + 3] < 40 ? 1 : 0
+    const tmp = new Uint8Array(w * h), near = new Uint8Array(w * h)
+    for (let y = 0; y < h; y++) { let c = 0; for (let x = 0; x <= D && x < w; x++) c += tr[y * w + x]; for (let x = 0; x < w; x++) { tmp[y * w + x] = c > 0 ? 1 : 0; const a = x + D + 1, r = x - D; if (a < w) c += tr[y * w + a]; if (r >= 0) c -= tr[y * w + r] } }
+    for (let x = 0; x < w; x++) { let c = 0; for (let y = 0; y <= D && y < h; y++) c += tmp[y * w + x]; for (let y = 0; y < h; y++) { near[y * w + x] = c > 0 ? 1 : 0; const a = y + D + 1, r = y - D; if (a < h) c += tmp[a * w + x]; if (r >= 0) c -= tmp[r * w + x] } }
+    for (let p = 0; p < w * h; p++) { const i = p * 4; if (d[i + 3] >= 40 && near[p] && Math.min(d[i], d[i + 1], d[i + 2]) > LIGHT) { d[i + 3] = 0; removed++ } }
+  }
   // cleanup: keep only the largest opaque component (the dog); drop stray near-white speckles
   const lab = new Int32Array(w * h)
   let best = 0, bestArea = 0, cur = 0
