@@ -87,25 +87,37 @@ for (const [src, name] of Object.entries(map)) {
     if (mem.length < 250) { for (const q of mem) d[q * 4 + 3] = 0; speck += mem.length }
   }
 
-  // Fill INTERIOR transparent pockets (the chest see-through specks) with the body fill, but leave the
-  // wispy OUTER gaps transparent. A pixel is interior iff it has opaque fur on ALL four sides (left,
-  // right, up AND down): true for a hole surrounded by the body, false for the outermost fringe where
-  // the outward side opens onto the page. This can never fill past the drawn strands — no halo, no
-  // hard webbing across the wispy edge — while still closing the speckles deep in the body.
+  // Fill INTERIOR transparent pockets (chest see-through specks) WITHOUT ever painting past the dog's
+  // edge. Flood the exterior on an *eroded* transparent mask (radius K): thin gaps between strands break,
+  // so deep chest pockets disconnect from the outside, while open outer gaps stay connected. Re-dilate
+  // that exterior by K and fill only transparent pixels it can't reach — leaving a K-px transparent moat
+  // at the edge, so the fill physically cannot reach the outermost strand (no halo, wispy edge kept).
   let filled = 0
   {
-    const op = (p) => d[p * 4 + 3] >= 40
-    const L = new Uint8Array(w * h), R = new Uint8Array(w * h), U = new Uint8Array(w * h), Dn = new Uint8Array(w * h)
-    for (let y = 0; y < h; y++) {
-      let s = 0; for (let x = 0; x < w; x++) { const p = y * w + x; L[p] = s; if (op(p)) s = 1 }
-      s = 0; for (let x = w - 1; x >= 0; x--) { const p = y * w + x; R[p] = s; if (op(p)) s = 1 }
+    const K = 5
+    const winMax = (src, R) => {
+      const tmp = new Uint8Array(w * h), out = new Uint8Array(w * h)
+      for (let y = 0; y < h; y++) { let c = 0; for (let x = 0; x <= R && x < w; x++) c += src[y * w + x]; for (let x = 0; x < w; x++) { tmp[y * w + x] = c > 0 ? 1 : 0; const a = x + R + 1, r = x - R; if (a < w) c += src[y * w + a]; if (r >= 0) c -= src[y * w + r] } }
+      for (let x = 0; x < w; x++) { let c = 0; for (let y = 0; y <= R && y < h; y++) c += tmp[y * w + x]; for (let y = 0; y < h; y++) { out[y * w + x] = c > 0 ? 1 : 0; const a = y + R + 1, r = y - R; if (a < h) c += tmp[a * w + x]; if (r >= 0) c -= tmp[r * w + x] } }
+      return out
     }
-    for (let x = 0; x < w; x++) {
-      let s = 0; for (let y = 0; y < h; y++) { const p = y * w + x; U[p] = s; if (op(p)) s = 1 }
-      s = 0; for (let y = h - 1; y >= 0; y--) { const p = y * w + x; Dn[p] = s; if (op(p)) s = 1 }
+    const trans = new Uint8Array(w * h); for (let p = 0; p < w * h; p++) trans[p] = d[p * 4 + 3] < 40 ? 1 : 0
+    const ntr = new Uint8Array(w * h); for (let p = 0; p < w * h; p++) ntr[p] = trans[p] ? 0 : 1
+    const ntrDil = winMax(ntr, K)               // erode(trans) = !dilate(!trans): thin transparent necks vanish
+    const open = (p) => !ntrDil[p]
+    const ext = new Uint8Array(w * h); const st = []
+    for (let x = 0; x < w; x++) { if (open(x)) { ext[x] = 1; st.push(x) } const b = (h - 1) * w + x; if (open(b)) { ext[b] = 1; st.push(b) } }
+    for (let y = 0; y < h; y++) { const l = y * w; if (open(l)) { ext[l] = 1; st.push(l) } const rr = y * w + w - 1; if (open(rr)) { ext[rr] = 1; st.push(rr) } }
+    while (st.length) {
+      const q = st.pop(), x = q % w, y = (q / w) | 0
+      if (x + 1 < w && !ext[q + 1] && open(q + 1)) { ext[q + 1] = 1; st.push(q + 1) }
+      if (x > 0 && !ext[q - 1] && open(q - 1)) { ext[q - 1] = 1; st.push(q - 1) }
+      if (y + 1 < h && !ext[q + w] && open(q + w)) { ext[q + w] = 1; st.push(q + w) }
+      if (y > 0 && !ext[q - w] && open(q - w)) { ext[q - w] = 1; st.push(q - w) }
     }
+    const extDil = winMax(ext, K)               // restore width — the K-px edge moat stays unfilled
     for (let p = 0; p < w * h; p++) {
-      if (d[p * 4 + 3] < 40 && L[p] && R[p] && U[p] && Dn[p]) { const i = p * 4; d[i] = 236; d[i + 1] = 236; d[i + 2] = 236; d[i + 3] = 255; filled++ }
+      if (trans[p] && !extDil[p]) { const i = p * 4; d[i] = 236; d[i + 1] = 236; d[i + 2] = 236; d[i + 3] = 255; filled++ }
     }
   }
   // Tone-map to a normal grayscale fur base. The sketch is near-white (body ~236), so it would recolour
