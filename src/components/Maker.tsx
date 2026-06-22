@@ -45,15 +45,57 @@ function PaperBg() {
   )
 }
 
+function isIOS(): boolean {
+  const ua = navigator.userAgent
+  return /iPad|iPhone|iPod/.test(ua) || (ua.includes('Mac') && 'ontouchend' in document)
+}
+function isStandalone(): boolean {
+  return window.matchMedia?.('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true
+}
+
 function StartScreen({ imgs, sample, onStart, canInstall, onInstall }: { imgs: Imgs; sample: MakerConfig; onStart: () => void; canInstall: boolean; onInstall: () => void }) {
+  const [howTo, setHowTo] = useState<null | 'ios' | 'desktop'>(null)
+  const installed = isStandalone()
+  const ios = isIOS()
+  const showInstall = !installed
+  function handleInstall() {
+    if (canInstall) { onInstall(); return }
+    setHowTo(ios ? 'ios' : 'desktop')
+  }
   return (
     <div className="start">
       <h1 className="brand">Margo's Dogs</h1>
       <p className="tag">make your very own puppy — and keep it as a sticker</p>
       <div className="start-card"><DogView cfg={sample} imgs={imgs} px={300} /></div>
       <button type="button" className="cta start-cta" onClick={onStart}>Start ▶</button>
-      {canInstall && <button type="button" className="ghost install-btn" onClick={onInstall}>📲 Add to home screen</button>}
+      {showInstall && <button type="button" className="ghost install-btn" onClick={handleInstall}>📲 Add to Home Screen</button>}
       <p className="start-note">built from a kid’s real drawings ✏️</p>
+      {howTo && <InstallHelp kind={howTo} onClose={() => setHowTo(null)} />}
+    </div>
+  )
+}
+
+function InstallHelp({ kind, onClose }: { kind: 'ios' | 'desktop'; onClose: () => void }) {
+  return (
+    <div className="modal-back" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <button type="button" className="modal-x" onClick={onClose} aria-label="Close">×</button>
+        <h3 className="modal-title">Add to Home Screen</h3>
+        {kind === 'ios' ? (
+          <ol className="howto">
+            <li>Open this page in <b>Safari</b> (if you’re in another browser, copy the link and paste it in Safari).</li>
+            <li>Tap the <b>Share</b> button <span className="key">⬆️</span> at the bottom of the screen.</li>
+            <li>Scroll and tap <b>«Add to Home Screen»</b> <span className="key">＋</span>.</li>
+            <li>Tap <b>Add</b>. The Margo’s Dogs icon will appear on your home screen.</li>
+          </ol>
+        ) : (
+          <ol className="howto">
+            <li>In Chrome or Edge, click the <b>install</b> icon <span className="key">⊕</span> in the address bar.</li>
+            <li>Or open the menu <span className="key">⋮</span> and pick <b>«Install Margo’s Dogs»</b>.</li>
+          </ol>
+        )}
+        <button type="button" className="cta" onClick={onClose}>Got it</button>
+      </div>
     </div>
   )
 }
