@@ -11,15 +11,26 @@ import './maker.css'
 type Imgs = Map<string, HTMLImageElement>
 type BIPEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<unknown> }
 
-/** Draw the dog described by `cfg` into a canvas, scaled by cfg.size, bottom-centered. */
-function DogView({ cfg, imgs, px }: { cfg: MakerConfig; imgs: Imgs; px: number }) {
+/** Draw the dog into a canvas sized to its actual on-screen pixels (× dpr), so it's never blurry. */
+function DogView({ cfg, imgs, px }: { cfg: MakerConfig; imgs: Imgs; px?: number }) {
   const ref = useRef<HTMLCanvasElement>(null)
+  const [w, setW] = useState(px ?? 200)
+  useEffect(() => {
+    const c = ref.current
+    if (!c || px != null) return // fixed-size path: skip the observer
+    const measure = () => { const r = c.getBoundingClientRect(); if (r.width > 0) setW(Math.round(r.width)) }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(c)
+    return () => ro.disconnect()
+  }, [px])
   useEffect(() => {
     const c = ref.current
     if (!c) return
+    const target = px ?? w
     const dpr = Math.min(2, typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1)
-    drawDogTo(c, cfg, imgs, Math.round(px * dpr))
-  }, [cfg.fur, cfg.ears, cfg.color, cfg.spotPattern, cfg.spotColor, cfg.eyes, cfg.muzzle, cfg.size, cfg.accessories.join(','), cfg.ground, imgs, px])
+    drawDogTo(c, cfg, imgs, Math.max(64, Math.round(target * dpr)))
+  }, [cfg.fur, cfg.ears, cfg.color, cfg.spotPattern, cfg.spotColor, cfg.eyes, cfg.muzzle, cfg.size, cfg.accessories.join(','), cfg.ground, imgs, px, w])
   return <canvas ref={ref} className="dogview" />
 }
 
@@ -112,8 +123,6 @@ const STEPS: { key: string; q: string }[] = [
   { key: 'ground', q: 'Where does it sit?' },
 ]
 
-const THUMB = 200
-
 export function Maker() {
   const [imgs, setImgs] = useState<Imgs | null>(null)
   const [cfg, setCfg] = useState<MakerConfig>(DEFAULT_CONFIG)
@@ -154,7 +163,7 @@ export function Maker() {
 
   const tiles = useMemo(() => {
     if (!imgs) return null
-    const thumb = (v: Partial<MakerConfig>) => <DogView cfg={variant(v)} imgs={imgs} px={THUMB} />
+    const thumb = (v: Partial<MakerConfig>) => <DogView cfg={variant(v)} imgs={imgs} />
     switch (cur.key) {
       case 'fur':
         return FURS.map((o) => <Tile key={o.id} label={o.label} selected={cfg.fur === o.id} onClick={() => set({ fur: o.id })}>{thumb({ fur: o.id })}</Tile>)
@@ -220,7 +229,7 @@ export function Maker() {
             <div className="tiles">
               {SPOT_PATTERNS.map((p) => (
                 <Tile key={p.label} label={p.label} selected={cfg.spotPattern === p.id} onClick={() => set({ spotPattern: p.id })}>
-                  <DogView cfg={variant({ spotPattern: p.id })} imgs={imgs!} px={THUMB} />
+                  <DogView cfg={variant({ spotPattern: p.id })} imgs={imgs!} />
                 </Tile>
               ))}
             </div>
@@ -229,7 +238,7 @@ export function Maker() {
               <div className="tiles">
                 {SPOT_COLORS.map((c) => (
                   <Tile key={c.hex} label={c.label} selected={cfg.spotColor === c.hex} onClick={() => set({ spotColor: c.hex })}>
-                    <DogView cfg={variant({ spotColor: c.hex })} imgs={imgs!} px={THUMB} />
+                    <DogView cfg={variant({ spotColor: c.hex })} imgs={imgs!} />
                   </Tile>
                 ))}
               </div>
