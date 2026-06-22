@@ -112,20 +112,50 @@ function InstallHelp({ kind, onClose }: { kind: 'ios' | 'desktop'; onClose: () =
   )
 }
 
-function McHelp({ onClose }: { onClose: () => void }) {
+function McHelp({ onClose, onDownload }: { onClose: () => void; onDownload: () => Promise<void> }) {
+  const [state, setState] = useState<'idle' | 'making' | 'done'>('idle')
+  async function download() {
+    setState('making')
+    try { await onDownload(); setState('done') }
+    catch { setState('idle'); alert("Sorry — couldn't make the Minecraft pack. Please try again.") }
+  }
   return (
     <div className="modal-back" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal mc-modal" onClick={(e) => e.stopPropagation()}>
         <button type="button" className="modal-x" onClick={onClose} aria-label="Close">×</button>
-        <h3 className="modal-title">⛏️ Your dog is in Minecraft!</h3>
-        <p className="hint" style={{ textAlign: 'left', maxWidth: 'none' }}>Saved a <b>.mcpack</b> file. This is for <b>Minecraft on a phone/tablet (Bedrock)</b>.</p>
-        <ol className="howto">
-          <li><b>Tap the downloaded .mcpack</b> file — Minecraft opens and imports it.</li>
-          <li>Open a world → <b>Settings → Resource Packs</b> → activate <b>«… painting»</b>.</li>
-          <li>Build a <b>4×4 empty wall</b>, then place a <b>painting</b> on it — it becomes your dog! 🐶</li>
+        <h3 className="modal-title">⛏️ Put your dog in Minecraft</h3>
+        <p className="hint" style={{ textAlign: 'left', maxWidth: 'none', marginTop: 0 }}>
+          For <b>Minecraft on a tablet or phone</b> (the “Bedrock” version). Do the steps in order — it’s easy! 💪
+        </p>
+
+        <p className="substep" style={{ marginTop: 14 }}>① Get the pack</p>
+        <ol className="howto" start={1}>
+          <li>Tap the big <b>“Download”</b> button below. It saves a file named <b>…​.mcpack</b>.</li>
+          <li><b>Open that file</b> — tap it in the download pop-up (or in your <b>Files / Downloads</b> app). Minecraft opens by itself and shows <b>“Importing…”</b>, then <b>“Successfully imported”</b>. 🎉</li>
         </ol>
-        <p className="hint" style={{ textAlign: 'left', maxWidth: 'none' }}>Every painting in that world becomes your puppy.</p>
-        <button type="button" className="cta" onClick={onClose}>Got it</button>
+
+        <p className="substep">② Turn it on in a world</p>
+        <ol className="howto" start={3}>
+          <li>In Minecraft tap <b>Play → Create New → Create New World</b> (or pick a world you already have and tap the <b>pencil ✏️</b>).</li>
+          <li>On the left choose <b>Resource Packs → My Packs</b>, tap <b>“… painting”</b>, then tap <b>Activate</b>.</li>
+          <li>Tip for little hands: under <b>Game</b>, set <b>Game Mode = Creative</b> — then blocks and paintings are free. Tap <b>Create / Play</b>.</li>
+        </ol>
+
+        <p className="substep">③ Hang the painting 🐶</p>
+        <ol className="howto" start={6}>
+          <li>Tap the <b>“…” / ⊞ inventory</b> button, type <b>painting</b> in search, and tap the painting to grab it.</li>
+          <li>Stand in front of a <b>flat wall</b> (no wall? stack a few blocks to make one).</li>
+          <li><b>Tap the wall</b> — your puppy appears as a painting! Tap again for more. 🐾</li>
+        </ol>
+
+        <p className="hint" style={{ textAlign: 'left', maxWidth: 'none' }}>
+          ✨ <b>Every</b> painting in that world is now your dog — any wall works. If one looks cut off, hold/break it and place it on a <b>bigger</b> wall (try 2×2 or 4×3) to get a larger picture.
+        </p>
+
+        <button type="button" className="cta mc-btn" onClick={download} disabled={state === 'making'}>
+          {state === 'making' ? 'Making the pack…' : state === 'done' ? '✓ Downloaded — now open the file' : '⬇️ Download the pack'}
+        </button>
+        {state === 'done' && <p className="start-note" style={{ marginTop: 8 }}>Saved! Find it in your Downloads and tap it to open Minecraft.</p>}
       </div>
     </div>
   )
@@ -152,7 +182,6 @@ export function Maker() {
   const [started, setStarted] = useState(false)
   const [sample] = useState<MakerConfig>(() => ({ ...randomConfig(), accessories: ['partyhat'], ground: 'grass' }))
   const [installEvt, setInstallEvt] = useState<BIPEvent | null>(null)
-  const [making, setMaking] = useState(false)
   const [showMc, setShowMc] = useState(false)
 
   useEffect(() => { let live = true; preloadAll().then((m) => { if (live) setImgs(m) }); return () => { live = false } }, [])
@@ -184,12 +213,9 @@ export function Maker() {
     finally { setSaving(false) }
   }
 
-  async function handleMinecraft() {
+  async function downloadMcpack() {
     if (!imgs) return
-    setMaking(true)
-    try { await exportMcpack(cfg, imgs); setShowMc(true) }
-    catch { alert("Sorry — couldn't make the Minecraft pack. Please try again.") }
-    finally { setMaking(false) }
+    await exportMcpack(cfg, imgs)
   }
 
   const tiles = useMemo(() => {
@@ -287,13 +313,13 @@ export function Maker() {
         {last ? (
           <>
             <button type="button" className="cta" disabled={saving} onClick={handleSave}>{saving ? 'Saving…' : '🎉 Save sticker'}</button>
-            <button type="button" className="nav mc-btn" disabled={making} onClick={handleMinecraft}>{making ? '…' : '⛏️ Minecraft'}</button>
+            <button type="button" className="nav mc-btn" onClick={() => setShowMc(true)}>⛏️ Minecraft</button>
           </>
         ) : (
           <button type="button" className="cta" onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}>Next →</button>
         )}
       </footer>
-      {showMc && <McHelp onClose={() => setShowMc(false)} />}
+      {showMc && <McHelp onClose={() => setShowMc(false)} onDownload={downloadMcpack} />}
     </div>
     </>
   )
