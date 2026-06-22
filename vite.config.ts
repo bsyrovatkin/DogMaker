@@ -63,6 +63,23 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icon-192.png', 'icon-512.png', 'maskable-512.png'],
+      workbox: {
+        // Don't hard-precache the dog art (it changes at stable URLs). Serve it network-first so a new
+        // deploy is picked up immediately when online, while still working offline from the cache.
+        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.destination === 'image',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'dog-art',
+              networkTimeoutSeconds: 4,
+              expiration: { maxEntries: 500, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
+      },
       manifest: {
         name: "Margo's Dogs",
         short_name: "Margo's Dogs",
