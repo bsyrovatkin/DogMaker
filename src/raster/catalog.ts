@@ -67,6 +67,11 @@ export const SIZES: { v: number; label: string }[] = [
   { v: 0.72, label: 'Tiny' }, { v: 0.86, label: 'Small' }, { v: 1, label: 'Normal' }, { v: 1.12, label: 'Big' },
 ]
 
+/** Body width — horizontal stretch of the whole dog (accessories follow automatically). */
+export const BODIES: { v: number; label: string }[] = [
+  { v: 0.82, label: 'Thin' }, { v: 1, label: 'Normal' }, { v: 1.14, label: 'Chubby' }, { v: 1.26, label: 'Chonky' },
+]
+
 export const ACCESSORIES: { id: string | null; label: string }[] = [
   { id: null, label: 'None' },
   { id: 'beanie', label: 'Beanie' }, { id: 'partyhat', label: 'Party' }, { id: 'crown', label: 'Crown' },
@@ -92,6 +97,8 @@ export interface MakerConfig {
   eyes: string
   muzzle: string
   size: number
+  /** Horizontal body stretch (see BODIES). 1 = normal. */
+  body: number
   accessories: string[]
   ground: string | null
   name: string
@@ -100,7 +107,7 @@ export interface MakerConfig {
 export const DEFAULT_CONFIG: MakerConfig = {
   fur: 'curly', ears: 'floppy', color: '#c98a5e',
   spotPattern: null, spotColor: SPOT_COLORS[0].hex,
-  eyes: 'dots', muzzle: 'smile', size: 1, accessories: [], ground: 'grass', name: '',
+  eyes: 'dots', muzzle: 'smile', size: 1, body: 1, accessories: [], ground: 'grass', name: '',
 }
 
 function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)] }
@@ -122,6 +129,7 @@ export function randomConfig(): MakerConfig {
     eyes: pick(EYES).id,
     muzzle: pick(MUZZLES).id,
     size: pick(SIZES).v,
+    body: pick(BODIES).v,
     accessories,
     ground: pick(GROUNDS).id,
     name: '',

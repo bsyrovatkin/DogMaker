@@ -3,7 +3,7 @@ import { preloadAll } from '../raster/assets'
 import { drawDogTo } from '../raster/renderDog'
 import { saveSticker } from '../raster/exportDog'
 import {
-  FURS, EARS, COLORS, SPOT_PATTERNS, SPOT_COLORS, EYES, MUZZLES, SIZES, ACCESSORIES, GROUNDS,
+  FURS, EARS, COLORS, SPOT_PATTERNS, SPOT_COLORS, EYES, MUZZLES, SIZES, BODIES, ACCESSORIES, GROUNDS,
   DEFAULT_CONFIG, randomConfig, type MakerConfig,
 } from '../raster/catalog'
 import './maker.css'
@@ -30,7 +30,7 @@ function DogView({ cfg, imgs, px }: { cfg: MakerConfig; imgs: Imgs; px?: number 
     const target = px ?? w
     const dpr = Math.min(2, typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1)
     drawDogTo(c, cfg, imgs, Math.max(64, Math.round(target * dpr)))
-  }, [cfg.fur, cfg.ears, cfg.color, cfg.spotPattern, cfg.spotColor, cfg.eyes, cfg.muzzle, cfg.size, cfg.accessories.join(','), cfg.ground, imgs, px, w])
+  }, [cfg.fur, cfg.ears, cfg.color, cfg.spotPattern, cfg.spotColor, cfg.eyes, cfg.muzzle, cfg.size, cfg.body, cfg.accessories.join(','), cfg.ground, imgs, px, w])
   return <canvas ref={ref} className="dogview" />
 }
 
@@ -119,6 +119,7 @@ const STEPS: { key: string; q: string }[] = [
   { key: 'eyes', q: 'Pick the eyes' },
   { key: 'muzzle', q: 'Pick the mouth' },
   { key: 'size', q: 'How big?' },
+  { key: 'body', q: 'Thin or chonky?' },
   { key: 'accessory', q: 'Add accessories — pick as many as you like' },
   { key: 'ground', q: 'Where does it sit?' },
 ]
@@ -177,6 +178,8 @@ export function Maker() {
         return MUZZLES.map((o) => <Tile key={o.id} label={o.label} selected={cfg.muzzle === o.id} onClick={() => set({ muzzle: o.id })}>{thumb({ muzzle: o.id })}</Tile>)
       case 'size':
         return SIZES.map((o) => <Tile key={o.label} label={o.label} selected={cfg.size === o.v} onClick={() => set({ size: o.v })}>{thumb({ size: o.v })}</Tile>)
+      case 'body':
+        return BODIES.map((o) => <Tile key={o.label} label={o.label} selected={cfg.body === o.v} onClick={() => set({ body: o.v })}>{thumb({ body: o.v })}</Tile>)
       case 'accessory':
         return ACCESSORIES.map((o) => {
           const id = o.id

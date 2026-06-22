@@ -53,7 +53,8 @@ export function drawDogTo(canvas: HTMLCanvasElement, cfg: MakerConfig, imgs: Img
   if (inner) {
     // size 1 fills ~94% of the height; "Big" is capped at a full-height fit so it never clips
     const scale = (px / inner.height) * Math.min(cfg.size * 0.94, 1)
-    const dw = inner.width * scale
+    const body = cfg.body ?? 1 // horizontal stretch: whole composite (dog + accessories) widens/narrows together
+    const dw = inner.width * scale * body
     const dh = inner.height * scale
     ctx.drawImage(inner, (px - dw) / 2, px - dh, dw, dh) // bottom-aligned: grass sits at the floor
   }
