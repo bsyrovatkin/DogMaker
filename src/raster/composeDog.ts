@@ -153,8 +153,6 @@ export interface PortraitSpec {
   accessories?: { img: HTMLImageElement; anchor: Anchor; back?: boolean; cropTop?: number }[]
   /** Transparent headroom added ABOVE the dog (fraction of width) so tall hats fit. Anchors stay relative to the dog. */
   headroom?: number
-  /** Soft pastel recolour for airy line-art bases (silky) so the body isn't over-painted to one flat tone. */
-  soft?: boolean
 }
 
 interface PlaceOpts { cropTop?: number; pink?: [number, number, number]; inkify?: boolean }
@@ -191,7 +189,7 @@ export function composeDog(spec: PortraitSpec): HTMLCanvasElement {
   for (const a of spec.accessories ?? []) if (a.back) place(a.img, a.anchor, { cropTop: a.cropTop })
 
   const spots = spec.spotColor ? { hex: spec.spotColor, seed: spec.spotSeed, pattern: spec.spotPattern } : undefined
-  ctx.drawImage(recolor(spec.base, W, baseH, spec.color, spots, spec.soft), 0, topPad)
+  ctx.drawImage(recolor(spec.base, W, baseH, spec.color, spots), 0, topPad)
 
   if (spec.eyes && spec.eyeAnchor) place(spec.eyes, spec.eyeAnchor, { inkify: !spec.eyeColored })
   if (spec.muzzle && spec.muzzleAnchor) place(spec.muzzle, spec.muzzleAnchor, { inkify: !spec.muzzleColored, pink: spec.muzzleColored ? undefined : (spec.muzzlePink ? PINK : undefined) })

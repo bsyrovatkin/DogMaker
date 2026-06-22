@@ -132,6 +132,16 @@ for (const [src, name] of Object.entries(map)) {
       if (!seen[p] && d[p * 4 + 3] < 40) { const i = p * 4; d[i] = 236; d[i + 1] = 236; d[i + 2] = 236; d[i + 3] = 255; filled++ }
     }
   }
+  // Tone-map to a normal grayscale fur base. The sketch is near-white (body ~236), so it would recolour
+  // far PALER than the other furs (whose mid-grey bodies multiply the coat down). Multiply the whole
+  // opaque dog to a mid-tone: the body now recolours as richly as curly/shaggy, AND the mid strands drop
+  // below the standard ink threshold so they read as crisp dark fur lines. Result: silky is a PLAIN base
+  // that needs NO special-casing in recolor(). 0.7 was matched against the curly reference.
+  for (let p = 0; p < w * h; p++) {
+    if (d[p * 4 + 3] < 40) continue
+    const i = p * 4
+    d[i] = Math.round(d[i] * 0.7); d[i + 1] = Math.round(d[i + 1] * 0.7); d[i + 2] = Math.round(d[i + 2] * 0.7)
+  }
   console.log(name, '— holes filled', filled)
   fs.writeFileSync(path.join(DIR, name + '.png'), PNG.sync.write(png))
   console.log(name, 'bg removed', removed, 'speckles', speck)

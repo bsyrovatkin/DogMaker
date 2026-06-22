@@ -165,11 +165,9 @@ function spotMask(w, h, pattern, seed) {
 }
 
 // recolor a (resized) grayscale base: coat tint with floor + spots + re-asserted ink outline
-function recolorBase(base, coatHex, spotHex, seed, pattern, soft, inkLum, lumScale) {
+function recolorBase(base, coatHex, spotHex, seed, pattern) {
   const { width: w, height: h, data: src } = base
   const out = Buffer.alloc(w * h * 4)
-  const IL = inkLum || INK_LUM
-  const LS = lumScale || 1
   const [tr, tg, tb] = hex(coatHex)
   const spots = spotHex ? spotMask(w, h, pattern || 'blobs', seed || 7) : null
   const [sr, sg, sb] = spotHex ? hex(spotHex) : [0, 0, 0]
@@ -178,11 +176,11 @@ function recolorBase(base, coatHex, spotHex, seed, pattern, soft, inkLum, lumSca
     if (a === 0) { out[i + 3] = 0; continue }
     const r = src[i], g = src[i + 1], b = src[i + 2]
     const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-    const shade = FLOOR + (1 - FLOOR) * lum * LS // LS<1 darkens the (near-white) silky body so the colour reads as rich as other furs
+    const shade = FLOOR + (1 - FLOOR) * lum
     let cr, cg, cb
     if (spots && spots[p]) { cr = sr * shade; cg = sg * shade; cb = sb * shade }
     else { cr = tr * shade; cg = tg * shade; cb = tb * shade }
-    let ink = clamp((IL - lum) / IL, 0, 1); ink = ink * ink
+    let ink = clamp((INK_LUM - lum) / INK_LUM, 0, 1); ink = ink * ink
     out[i] = cr + (INK[0] - cr) * ink
     out[i + 1] = cg + (INK[1] - cg) * ink
     out[i + 2] = cb + (INK[2] - cb) * ink
@@ -470,18 +468,18 @@ function makeDog(o) {
   console.log('spot order:', patterns.join(', '))
 }
 
-// === FINAL silky (lumScale 0.7 + ink 0.62) — top row curly REF, bottom row silky, same colours ===
+// === silky re-baked as a PLAIN base (no recolor special-casing) — top curly REF, bottom silky, same colours ===
 {
   const colors = ['#c98a5e', '#e0aa55', '#b15a36', '#4b443c', '#5fd0d0', '#e6a0b0']
-  const mk = (base, soft) => colors.map((col) => {
-    const b = recolorBase(baseImg(base), col, null, 7, null, soft, soft ? 0.62 : null, soft ? 0.7 : null)
+  const mk = (base) => colors.map((col) => {
+    const b = recolorBase(baseImg(base), col, null, 7) // plain recolor — mirrors production
     const c = canvasFor(b); placeBase(c, b)
     over(c.buf, c.W, c.H, inkPartImg('eyes-big'), EYE)
     const mp = muzzlePink('muzzle-tongue')
     over(c.buf, c.W, c.H, mp.part, MUZ, { pink: PINK, mask: mp.mask })
     return c
   })
-  const tiles = [...mk('curly-floppy', false), ...mk('silky-floppy', true)]
+  const tiles = [...mk('curly-floppy'), ...mk('silky-floppy')]
   const Wt = tiles[0].W, Ht = tiles[0].H, gap = 12, cols = colors.length, rows = 2
   const sheet = { buf: Buffer.alloc((Wt * cols + gap * (cols - 1)) * (Ht * rows + gap * (rows - 1)) * 4), W: Wt * cols + gap * (cols - 1), H: Ht * rows + gap * (rows - 1) }
   tiles.forEach((t, k) => {

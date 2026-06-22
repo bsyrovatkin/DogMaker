@@ -163,7 +163,6 @@ export function recolor(
   height: number,
   hex: string,
   spots?: SpotOpts,
-  soft = false,
 ): HTMLCanvasElement {
   const canvas = document.createElement('canvas')
   const w = Math.round(width), h = Math.round(height)
@@ -180,17 +179,11 @@ export function recolor(
     const i = p * 4
     if (d[i + 3] === 0) continue
     const lum = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255
-    // Silky ('soft') is a fine pencil sketch: a near-white body (lum ~0.9) with lots of thin strands.
-    // 1) Its near-white body would recolour to almost the raw hex — far paler than the other furs,
-    //    whose mid-grey bodies multiply the colour down. Scale lum so the body reads as rich as them.
-    // 2) Raise the ink threshold so the mid-tone strands ink into crisp dark fur lines (real texture)
-    //    instead of all taking the coat colour and looking like one flat repaint.
-    const shade = FLOOR + (1 - FLOOR) * (soft ? lum * 0.7 : lum)
+    const shade = FLOOR + (1 - FLOOR) * lum
     let cr, cg, cb
     if (sp && sp[p]) { cr = sr * shade; cg = sg * shade; cb = sb * shade }
     else { cr = tr * shade; cg = tg * shade; cb = tb * shade }
-    const il = soft ? 0.62 : INK_LUM
-    let ink = (il - lum) / il
+    let ink = (INK_LUM - lum) / INK_LUM
     ink = ink < 0 ? 0 : ink > 1 ? 1 : ink
     ink *= ink
     d[i] = cr + (INK[0] - cr) * ink

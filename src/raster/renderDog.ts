@@ -42,7 +42,6 @@ export function composeFromConfig(cfg: MakerConfig, imgs: Imgs, size: number): H
     ground: ground ?? undefined,
     groundAnchor: ground ? GROUND_ANCHOR : undefined,
     accessories,
-    soft: cfg.fur === 'silky',
   })
 }
 
