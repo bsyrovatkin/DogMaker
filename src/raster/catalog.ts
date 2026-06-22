@@ -22,13 +22,23 @@ export const COLORS: { hex: string; label: string }[] = [
   { label: 'Pink', hex: '#e6a0b0' }, { label: 'Mint', hex: '#9fccb6' }, { label: 'Sky', hex: '#9db9dd' }, { label: 'Lavender', hex: '#b3a3d1' },
 ]
 
-export const SPOTS: { label: string; hex: string | null }[] = [
-  { label: 'No spots', hex: null },
+/** Spot pattern shapes — applied as a 2nd colour on the body. `null` = no spots at all. */
+export const SPOT_PATTERNS: { id: string | null; label: string }[] = [
+  { id: null, label: 'No spots' },
+  { id: 'blobs', label: 'Blobs' },
+  { id: 'dots', label: 'Dots' },
+  { id: 'patches', label: 'Patches' },
+  { id: 'splash', label: 'Splash' },
+]
+
+/** Available spot colours. Picked separately from the pattern. */
+export const SPOT_COLORS: { label: string; hex: string }[] = [
   { label: 'Brown', hex: '#6b4a2f' },
   { label: 'Caramel', hex: '#a9713f' },
   { label: 'Grey', hex: '#7d756e' },
   { label: 'Black', hex: '#2f2a26' },
   { label: 'Cream', hex: '#ead8bd' },
+  { label: 'White', hex: '#f4ecdc' },
 ]
 
 export const EYES: Opt[] = [
@@ -65,7 +75,10 @@ export interface MakerConfig {
   fur: string
   ears: string
   color: string
-  spot: string | null
+  /** Pattern shape id (see SPOT_PATTERNS). `null` = no spots. */
+  spotPattern: string | null
+  /** Spot fill colour (used only when spotPattern is set). */
+  spotColor: string
   eyes: string
   muzzle: string
   size: number
@@ -75,7 +88,8 @@ export interface MakerConfig {
 }
 
 export const DEFAULT_CONFIG: MakerConfig = {
-  fur: 'curly', ears: 'floppy', color: '#c98a5e', spot: null,
+  fur: 'curly', ears: 'floppy', color: '#c98a5e',
+  spotPattern: null, spotColor: SPOT_COLORS[0].hex,
   eyes: 'dots', muzzle: 'smile', size: 1, accessories: [], ground: 'grass', name: '',
 }
 
@@ -93,7 +107,8 @@ export function randomConfig(): MakerConfig {
     fur: pick(FURS).id,
     ears: pick(EARS).id,
     color: pick(COLORS).hex,
-    spot: pick(SPOTS).hex,
+    spotPattern: pick(SPOT_PATTERNS).id,
+    spotColor: pick(SPOT_COLORS).hex,
     eyes: pick(EYES).id,
     muzzle: pick(MUZZLES).id,
     size: pick(SIZES).v,

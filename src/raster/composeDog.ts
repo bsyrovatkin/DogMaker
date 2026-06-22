@@ -130,6 +130,8 @@ export interface PortraitSpec {
   /** 2nd colour painted as spots over the body. */
   spotColor?: string
   spotSeed?: number
+  /** Spot pattern shape (see SpotPattern). Defaults to 'blobs'. */
+  spotPattern?: 'blobs' | 'dots' | 'patches' | 'splash'
   eyes?: HTMLImageElement
   eyeAnchor?: Anchor
   muzzle?: HTMLImageElement
@@ -182,7 +184,7 @@ export function composeDog(spec: PortraitSpec): HTMLCanvasElement {
   if (spec.accessory && spec.accessoryBack && spec.accessoryAnchor) place(spec.accessory, spec.accessoryAnchor, { cropTop: spec.accessoryCropTop })
   for (const a of spec.accessories ?? []) if (a.back) place(a.img, a.anchor, { cropTop: a.cropTop })
 
-  const spots = spec.spotColor ? { hex: spec.spotColor, seed: spec.spotSeed } : undefined
+  const spots = spec.spotColor ? { hex: spec.spotColor, seed: spec.spotSeed, pattern: spec.spotPattern } : undefined
   ctx.drawImage(recolor(spec.base, W, baseH, spec.color, spots), 0, topPad)
 
   if (spec.eyes && spec.eyeAnchor) place(spec.eyes, spec.eyeAnchor, { inkify: true })

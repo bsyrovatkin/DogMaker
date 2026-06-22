@@ -2,6 +2,7 @@ import { composeDog } from './composeDog'
 import { eyeAnchorFor, muzzleAnchorFor, GROUND_ANCHOR, accessoryFor } from './anchors'
 import { baseUrl, partUrl } from './assets'
 import { MUZZLES, type MakerConfig } from './catalog'
+import type { SpotPattern } from './recolor'
 
 type Imgs = Map<string, HTMLImageElement>
 
@@ -28,7 +29,8 @@ export function composeFromConfig(cfg: MakerConfig, imgs: Imgs, size: number): H
     color: cfg.color,
     size,
     headroom: HEADROOM,
-    spotColor: cfg.spot ?? undefined,
+    spotColor: cfg.spotPattern ? cfg.spotColor : undefined,
+    spotPattern: (cfg.spotPattern as SpotPattern | null) ?? undefined,
     spotSeed: 7,
     eyes: eyes ?? undefined,
     eyeAnchor: eyes ? eyeAnchorFor(baseKey) : undefined,

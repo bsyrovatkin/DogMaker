@@ -75,26 +75,48 @@ function resize(png, RW) {
   return { width: RW, height: RH, data: out }
 }
 
-// procedural spot mask over the body area
-function spotMask(w, h, seed) {
-  let s = seed
+// procedural spot mask — 4 named patterns (mirrors src/raster/recolor.ts)
+function spotMask(w, h, pattern, seed) {
+  let s = (seed >>> 0) || 1
   const rnd = () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff }
-  const blobs = []
-  // keep spots on the body/legs (cy 0.42..0.85), off the face; smaller, irregular
-  for (let i = 0; i < 11; i++) blobs.push({ cx: (0.2 + rnd() * 0.6) * w, cy: (0.42 + rnd() * 0.43) * h, rx: (0.035 + rnd() * 0.05) * w, ry: (0.035 + rnd() * 0.05) * w })
   const m = new Uint8Array(w * h)
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    for (const b of blobs) { const dx = (x - b.cx) / b.rx, dy = (y - b.cy) / b.ry; if (dx * dx + dy * dy <= 1) { m[y * w + x] = 1; break } }
+  const stamp = (cx, cy, rx, ry, rot = 0) => {
+    const cos = Math.cos(rot), sin = Math.sin(rot)
+    const r = Math.max(rx, ry) + 1
+    const x0 = Math.max(0, Math.floor(cx - r)), x1 = Math.min(w - 1, Math.ceil(cx + r))
+    const y0 = Math.max(0, Math.floor(cy - r)), y1 = Math.min(h - 1, Math.ceil(cy + r))
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const dx = x - cx, dy = y - cy
+      const u = (dx * cos + dy * sin) / rx, v = (-dx * sin + dy * cos) / ry
+      if (u * u + v * v <= 1) m[y * w + x] = 1
+    }
+  }
+  const inBody = (y) => y > 0.42 * h && y < 0.85 * h
+  if (pattern === 'dots') {
+    for (let i = 0; i < 28; i++) { const cx = (0.18 + rnd() * 0.64) * w, cy = (0.42 + rnd() * 0.43) * h, r = (0.018 + rnd() * 0.022) * w; if (inBody(cy)) stamp(cx, cy, r, r * (0.85 + rnd() * 0.3)) }
+  } else if (pattern === 'patches') {
+    for (let i = 0; i < 4; i++) {
+      const cx = (0.22 + rnd() * 0.56) * w, cy = (0.46 + rnd() * 0.34) * h, rx = (0.10 + rnd() * 0.08) * w, ry = (0.08 + rnd() * 0.08) * w
+      stamp(cx, cy, rx, ry, rnd() * Math.PI)
+      for (let j = 0; j < 2; j++) { const ang = rnd() * Math.PI * 2, d = (rx + ry) * 0.55, r2 = (0.025 + rnd() * 0.04) * w; stamp(cx + Math.cos(ang) * d, cy + Math.sin(ang) * d, r2, r2 * (0.9 + rnd() * 0.3)) }
+    }
+  } else if (pattern === 'splash') {
+    for (let i = 0; i < 5; i++) {
+      const cx = (0.22 + rnd() * 0.56) * w, cy = (0.45 + rnd() * 0.38) * h
+      for (let j = 0; j < 9; j++) { const ang = rnd() * Math.PI * 2, d = rnd() * 0.09 * w, r = (0.018 + rnd() * 0.034) * w; stamp(cx + Math.cos(ang) * d, cy + Math.sin(ang) * d, r, r * (0.7 + rnd() * 0.6)) }
+    }
+  } else {
+    for (let i = 0; i < 11; i++) { const cx = (0.2 + rnd() * 0.6) * w, cy = (0.42 + rnd() * 0.43) * h, r = (0.035 + rnd() * 0.05) * w; stamp(cx, cy, r, r * (0.9 + rnd() * 0.2)) }
   }
   return m
 }
 
 // recolor a (resized) grayscale base: coat tint with floor + spots + re-asserted ink outline
-function recolorBase(base, coatHex, spotHex, seed) {
+function recolorBase(base, coatHex, spotHex, seed, pattern) {
   const { width: w, height: h, data: src } = base
   const out = Buffer.alloc(w * h * 4)
   const [tr, tg, tb] = hex(coatHex)
-  const spots = spotHex ? spotMask(w, h, seed || 7) : null
+  const spots = spotHex ? spotMask(w, h, pattern || 'blobs', seed || 7) : null
   const [sr, sg, sb] = spotHex ? hex(spotHex) : [0, 0, 0]
   for (let p = 0; p < w * h; p++) {
     const i = p * 4, a = src[i + 3]
@@ -366,6 +388,29 @@ function makeDog(o) {
   })
   writePng('accessories.png', sheet)
   console.log('accessory order:', ids.join(', '))
+}
+
+// === 4 spot patterns on one dog ===
+{
+  const patterns = ['blobs', 'dots', 'patches', 'splash']
+  const tiles = patterns.map((pat) => {
+    const base = recolorBase(baseImg('curly-floppy'), '#ead8bd', '#6b4a2f', 11, pat)
+    const c = canvasFor(base); placeBase(c, base)
+    over(c.buf, c.W, c.H, inkPartImg('eyes-dots'), EYE)
+    over(c.buf, c.W, c.H, inkPartImg('muzzle-smile'), MUZ)
+    return c
+  })
+  const Wt = tiles[0].W, Ht = tiles[0].H, gap = 12
+  const sheet = { buf: Buffer.alloc((Wt * 4 + gap * 3) * Ht * 4), W: Wt * 4 + gap * 3, H: Ht }
+  tiles.forEach((t, k) => {
+    const ox = k * (Wt + gap)
+    for (let y = 0; y < Ht; y++) for (let x = 0; x < Wt; x++) {
+      const si = (y * Wt + x) * 4, di = (y * sheet.W + ox + x) * 4
+      sheet.buf[di] = t.buf[si]; sheet.buf[di + 1] = t.buf[si + 1]; sheet.buf[di + 2] = t.buf[si + 2]; sheet.buf[di + 3] = t.buf[si + 3]
+    }
+  })
+  writePng('spots.png', sheet)
+  console.log('spot order:', patterns.join(', '))
 }
 
 console.log('done')

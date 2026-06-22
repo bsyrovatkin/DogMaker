@@ -49,7 +49,7 @@ export function AccessoryStudio() {
   useEffect(() => {
     if (!imgs) return
     const [fur, ears] = base.split('-')
-    const cfg: MakerConfig = { fur, ears, color: '#c98a5e', spot: null, eyes: 'dots', muzzle: 'smile', size: 1, accessories: [], ground: null, name: '' }
+    const cfg: MakerConfig = { fur, ears, color: '#c98a5e', spotPattern: null, spotColor: '#6b4a2f', eyes: 'dots', muzzle: 'smile', size: 1, accessories: [], ground: null, name: '' }
     setDogCanvas(composeFromConfig(cfg, imgs, W))
   }, [base, imgs])
 

@@ -3,7 +3,7 @@ import { preloadAll } from '../raster/assets'
 import { drawDogTo } from '../raster/renderDog'
 import { saveSticker } from '../raster/exportDog'
 import {
-  FURS, EARS, COLORS, SPOTS, EYES, MUZZLES, SIZES, ACCESSORIES, GROUNDS,
+  FURS, EARS, COLORS, SPOT_PATTERNS, SPOT_COLORS, EYES, MUZZLES, SIZES, ACCESSORIES, GROUNDS,
   DEFAULT_CONFIG, randomConfig, type MakerConfig,
 } from '../raster/catalog'
 import './maker.css'
@@ -19,7 +19,7 @@ function DogView({ cfg, imgs, px }: { cfg: MakerConfig; imgs: Imgs; px: number }
     if (!c) return
     const dpr = Math.min(2, typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1)
     drawDogTo(c, cfg, imgs, Math.round(px * dpr))
-  }, [cfg.fur, cfg.ears, cfg.color, cfg.spot, cfg.eyes, cfg.muzzle, cfg.size, cfg.accessories.join(','), cfg.ground, imgs, px])
+  }, [cfg.fur, cfg.ears, cfg.color, cfg.spotPattern, cfg.spotColor, cfg.eyes, cfg.muzzle, cfg.size, cfg.accessories.join(','), cfg.ground, imgs, px])
   return <canvas ref={ref} className="dogview" />
 }
 
@@ -104,7 +104,7 @@ const STEPS: { key: string; q: string }[] = [
   { key: 'fur', q: 'What kind of fur?' },
   { key: 'ears', q: 'Pick the ears' },
   { key: 'color', q: 'Choose a colour' },
-  { key: 'spot', q: 'Add some spots?' },
+  { key: 'spot', q: 'Spots — pattern and colour' },
   { key: 'eyes', q: 'Pick the eyes' },
   { key: 'muzzle', q: 'Pick the mouth' },
   { key: 'size', q: 'How big?' },
@@ -162,8 +162,6 @@ export function Maker() {
         return EARS.map((o) => <Tile key={o.id} label={o.label} selected={cfg.ears === o.id} onClick={() => set({ ears: o.id })}>{thumb({ ears: o.id })}</Tile>)
       case 'color':
         return COLORS.map((o) => <Tile key={o.hex} label={o.label} selected={cfg.color === o.hex} onClick={() => set({ color: o.hex })}>{thumb({ color: o.hex })}</Tile>)
-      case 'spot':
-        return SPOTS.map((o) => <Tile key={o.label} label={o.label} selected={cfg.spot === o.hex} onClick={() => set({ spot: o.hex })}>{thumb({ spot: o.hex })}</Tile>)
       case 'eyes':
         return EYES.map((o) => <Tile key={o.id} label={o.label} selected={cfg.eyes === o.id} onClick={() => set({ eyes: o.id })}>{thumb({ eyes: o.id })}</Tile>)
       case 'muzzle':
@@ -216,7 +214,30 @@ export function Maker() {
 
       <section className="step">
         <h2>{cur.q}</h2>
-        <div className="tiles">{tiles}</div>
+        {cur.key === 'spot' ? (
+          <>
+            <h3 className="substep">Pattern</h3>
+            <div className="tiles">
+              {SPOT_PATTERNS.map((p) => (
+                <Tile key={p.label} label={p.label} selected={cfg.spotPattern === p.id} onClick={() => set({ spotPattern: p.id })}>
+                  <DogView cfg={variant({ spotPattern: p.id })} imgs={imgs!} px={THUMB} />
+                </Tile>
+              ))}
+            </div>
+            {cfg.spotPattern && (<>
+              <h3 className="substep">Spot colour</h3>
+              <div className="tiles">
+                {SPOT_COLORS.map((c) => (
+                  <Tile key={c.hex} label={c.label} selected={cfg.spotColor === c.hex} onClick={() => set({ spotColor: c.hex })}>
+                    <DogView cfg={variant({ spotColor: c.hex })} imgs={imgs!} px={THUMB} />
+                  </Tile>
+                ))}
+              </div>
+            </>)}
+          </>
+        ) : (
+          <div className="tiles">{tiles}</div>
+        )}
       </section>
 
       <footer className="maker-foot">
