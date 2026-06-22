@@ -39,4 +39,20 @@ describe('composeSvg', () => {
     expect(svg).toContain('viewBox="46 44 108 108"')
     expect(svg).not.toContain('viewBox="-30 -10 260 260"')
   })
+
+  it('draws a front accessory on top of the body and the default has none', () => {
+    expect(composeSvg(cfg)).not.toContain('#d6534e') // acc-none: nothing extra
+    const svg = composeSvg({ ...cfg, accessory: 'acc-beanie' })
+    const body = svg.indexOf('M72 118')   // bodyClassic marker
+    const beanie = svg.indexOf('M62 60')   // accBeanie dome marker
+    expect(beanie).toBeGreaterThan(body)
+  })
+
+  it('draws wings behind the body (back layer)', () => {
+    const svg = composeSvg({ ...cfg, accessory: 'acc-wings' })
+    const wings = svg.indexOf('M70 128')  // accWings left wing marker
+    const body = svg.indexOf('M72 118')   // bodyClassic marker
+    expect(wings).toBeGreaterThan(-1)
+    expect(wings).toBeLessThan(body)
+  })
 })

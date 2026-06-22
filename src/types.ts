@@ -1,6 +1,6 @@
 export type CategoryKey =
   | 'bodyType' | 'size' | 'fur' | 'color'
-  | 'ears' | 'eyes' | 'nose' | 'mouth'
+  | 'ears' | 'eyes' | 'nose' | 'mouth' | 'accessory'
 
 export type DogConfig = Record<CategoryKey, string>
 
@@ -13,6 +13,8 @@ export interface Option {
   color?: string
   /** Scale factor for `size` category options. */
   scale?: number
+  /** Accessory layer: when true the part draws behind the dog (e.g. wings). */
+  back?: boolean
 }
 
 export interface Category {

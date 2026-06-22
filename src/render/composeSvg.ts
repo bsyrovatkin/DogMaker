@@ -16,9 +16,14 @@ export function composeSvg(config: DogConfig, options: ComposeOptions = {}): str
   const viewBox = options.viewBox ?? FULL_VIEWBOX
   const color = colorHex(config)
   const scale = sizeScale(config)
-  const layers = LAYER_CATEGORY_KEYS
+  const body = LAYER_CATEGORY_KEYS
     .map((key) => getOption(key, config[key]).svg ?? '')
     .join('')
+
+  // The accessory sits either behind the dog (wings) or on top of every layer.
+  const accessory = getOption('accessory', config.accessory)
+  const accSvg = accessory.svg ?? ''
+  const layers = accessory.back ? accSvg + body : body + accSvg
 
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" ` +

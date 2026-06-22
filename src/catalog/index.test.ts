@@ -50,6 +50,6 @@ function base() {
   return {
     bodyType: 'body-classic', size: 'size-normal', fur: 'fur-short',
     color: 'col-classic', ears: 'ears-floppy', eyes: 'eyes-dots',
-    nose: 'nose-oval', mouth: 'mouth-smile',
+    nose: 'nose-oval', mouth: 'mouth-smile', accessory: 'acc-none',
   }
 }

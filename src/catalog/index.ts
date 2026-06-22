@@ -2,7 +2,7 @@ import type { Catalog, CategoryKey, DogConfig, Option } from '../types'
 import { PARTS } from './parts'
 
 export const CATEGORY_KEYS: CategoryKey[] = [
-  'bodyType', 'size', 'fur', 'color', 'ears', 'eyes', 'nose', 'mouth',
+  'bodyType', 'size', 'fur', 'color', 'ears', 'eyes', 'nose', 'mouth', 'accessory',
 ]
 
 /** Categories that draw an SVG layer, in back-to-front order. */
@@ -77,6 +77,25 @@ export const catalog: Catalog = [
     options: [
       { id: 'mouth-smile', label: 'Smile', svg: PARTS.mouthSmile },
       { id: 'mouth-tongue', label: 'Tongue', svg: PARTS.mouthTongue },
+    ],
+  },
+  {
+    // Not a LAYER_CATEGORY: composeSvg draws the chosen accessory either behind
+    // the dog (back: true, e.g. wings) or in front of every other layer.
+    key: 'accessory', label: 'Accessory',
+    defaultId: 'acc-none',
+    options: [
+      { id: 'acc-none', label: 'None' },
+      { id: 'acc-beanie', label: 'Beanie', svg: PARTS.accBeanie },
+      { id: 'acc-party', label: 'Party hat', svg: PARTS.accParty },
+      { id: 'acc-crown', label: 'Crown', svg: PARTS.accCrown },
+      { id: 'acc-bow', label: 'Bow', svg: PARTS.accBow },
+      { id: 'acc-glasses', label: 'Shades', svg: PARTS.accGlasses },
+      { id: 'acc-scarf', label: 'Scarf', svg: PARTS.accScarf },
+      { id: 'acc-bandana', label: 'Bandana', svg: PARTS.accBandana },
+      { id: 'acc-collar', label: 'Collar', svg: PARTS.accCollar },
+      { id: 'acc-tie', label: 'Necktie', svg: PARTS.accTie },
+      { id: 'acc-wings', label: 'Wings', svg: PARTS.accWings, back: true },
     ],
   },
 ]

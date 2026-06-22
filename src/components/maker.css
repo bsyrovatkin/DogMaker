@@ -1,0 +1,162 @@
+:root {
+  --paper: #f7f1e4;
+  --card: #fffdf8;
+  --ink: #4a3f34;
+  --muted: #8a7c68;
+  --line: #efe6d4;
+  --accent: #ef8f33;
+  --accent-dk: #c96f1c;
+  --sel: #f5c47a;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--paper); }
+body { overflow-x: hidden; }
+
+/* ---------- notebook background: cream paper + blue grid + the kid's drawings ---------- */
+.paper-bg {
+  position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(rgba(70, 110, 170, 0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(70, 110, 170, 0.10) 1px, transparent 1px);
+  background-size: 27px 27px;
+}
+/* Four corner backdrops: a square photo cropped centre so the page sits flat (no perspective tilt),
+   sized to ~36vmin and pushed off-screen by 1/3 of itself so only ~2/3 shows. */
+.corner { position: absolute; width: 36vmin; height: 36vmin; overflow: hidden; border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(80, 60, 30, 0.18); opacity: 0.72; }
+.corner img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.corner.tl { top: -12vmin; left: -12vmin; }
+.corner.tr { top: -12vmin; right: -12vmin; }
+.corner.bl { bottom: -12vmin; left: -12vmin; }
+.corner.br { bottom: -12vmin; right: -12vmin; }
+.paper-bg::after { /* gentle centre wash so content reads cleanly above the corners */
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 62% at 50% 48%, rgba(247, 241, 228, 0.6) 0%, rgba(247, 241, 228, 0.15) 70%, rgba(247, 241, 228, 0) 100%);
+}
+
+/* ---------- shared ---------- */
+.brand {
+  font-family: 'Gochi Hand', 'Baloo 2', cursive; color: var(--accent);
+  letter-spacing: 0.5px; margin: 0; line-height: 1; transform: rotate(-1.5deg);
+}
+.brand-btn { background: none; border: none; padding: 0; cursor: pointer; }
+.brand-btn:active { transform: rotate(-1.5deg) scale(0.96); }
+.install-btn { margin-top: 2px; font-size: 14px; padding: 9px 18px; }
+.cta {
+  font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 18px; color: #fff;
+  background: var(--accent); border: none; border-radius: 16px; padding: 14px 30px; cursor: pointer;
+  box-shadow: 0 4px 0 var(--accent-dk); transition: transform .08s, box-shadow .08s;
+}
+.cta:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--accent-dk); }
+.cta:disabled { opacity: .6; }
+.nav {
+  font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 16px; color: #6b5d4d;
+  background: var(--card); border: 2px solid var(--line); border-radius: 14px; padding: 11px 20px; cursor: pointer;
+  box-shadow: 0 3px 0 var(--line); transition: transform .08s, box-shadow .08s;
+}
+.nav:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--line); }
+.nav:disabled { opacity: .45; box-shadow: none; cursor: default; }
+.ghost {
+  font-family: 'Baloo 2', sans-serif; font-weight: 600; font-size: 13px; color: var(--muted);
+  background: var(--card); border: 2px solid var(--line); border-radius: 999px; padding: 6px 13px; cursor: pointer;
+  box-shadow: 0 2px 0 var(--line);
+}
+.ghost:active { transform: translateY(1px); box-shadow: none; }
+.dogview { display: block; width: 100%; height: auto; }
+
+/* ---------- start screen ---------- */
+.start {
+  position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px; padding: 28px 22px; text-align: center;
+  font-family: 'Baloo 2', sans-serif; color: var(--ink);
+}
+.start .brand { font-size: clamp(48px, 13vw, 72px); }
+.start .tag { font-size: 17px; color: var(--muted); margin: -4px 0 2px; max-width: 280px; }
+.start-card {
+  position: relative; width: min(300px, 76vw); aspect-ratio: 1; margin: 6px 0 8px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 20px;
+  box-shadow: 0 14px 34px rgba(120, 90, 40, 0.18); transform: rotate(-2.2deg);
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.start-card::before { /* a strip of washi tape */
+  content: ''; position: absolute; top: -12px; left: 50%; width: 96px; height: 26px;
+  transform: translateX(-50%) rotate(-3deg); background: rgba(245, 196, 122, 0.6);
+  border-left: 1px dashed rgba(0,0,0,.06); border-right: 1px dashed rgba(0,0,0,.06);
+}
+.start-card .dogview { width: 100%; height: 100%; }
+.start-cta { font-size: 22px; padding: 16px 46px; border-radius: 18px; }
+.start-note { font-size: 13px; color: #9a8c78; margin: 4px 0 0; }
+
+/* ---------- maker ---------- */
+.maker {
+  position: relative; z-index: 1; max-width: 560px; margin: 0 auto; min-height: 100dvh;
+  display: flex; flex-direction: column; padding: 10px 16px 96px;
+  font-family: 'Baloo 2', system-ui, sans-serif; color: var(--ink);
+}
+.maker.loading { align-items: center; justify-content: center; color: var(--muted); font-size: 18px; }
+
+.maker-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 4px; }
+.maker-head .brand { font-size: 32px; }
+.head-actions { display: flex; gap: 6px; }
+
+.preview {
+  position: relative; width: 100%; max-width: 330px; margin: 8px auto 2px; aspect-ratio: 1;
+  background: var(--card);
+  border: 1px solid var(--line); border-radius: 20px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 12px 30px rgba(120, 90, 40, 0.14);
+}
+.preview .dogview { width: 100%; height: 100%; }
+
+.dots { display: flex; gap: 8px; justify-content: center; margin: 12px 0 4px; flex-wrap: wrap; }
+.dot { width: 12px; height: 12px; border-radius: 999px; border: 2px solid var(--line); background: var(--card); padding: 0; cursor: pointer; }
+.dot.done { background: var(--sel); border-color: var(--sel); }
+.dot.on { background: var(--accent); border-color: var(--accent); transform: scale(1.25); }
+
+.step { flex: 1; }
+.step h2 { text-align: center; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 21px; margin: 12px 0 14px; }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px; }
+.tile {
+  position: relative; display: block; padding: 0; cursor: pointer; width: 100%; min-width: 0;
+  background: var(--card); border: 2px solid var(--line); border-radius: 18px; overflow: hidden;
+  font-family: 'Baloo 2', sans-serif; color: var(--ink); box-shadow: 0 3px 0 var(--line);
+  transition: transform .08s, box-shadow .08s, border-color .12s;
+}
+.tile.on { border-color: var(--accent); box-shadow: 0 3px 0 var(--accent); background: #fff7ec; }
+.tile:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--line); }
+.tile-art {
+  display: block; width: 100%; aspect-ratio: 1; overflow: hidden;
+}
+.tile-art .dogview { width: 100%; height: auto; display: block; }
+.tile-label {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  font-size: 15px; font-weight: 700; line-height: 1.1; text-align: center;
+  padding: 6px 6px 7px; color: #6b5d4d;
+  background: linear-gradient(to top, rgba(255, 253, 248, 0.96) 60%, rgba(255, 253, 248, 0));
+  text-shadow: 0 1px 0 #fff;
+}
+.tile.on .tile-label { color: var(--accent-dk); background: linear-gradient(to top, rgba(255, 247, 236, 0.96) 60%, rgba(255, 247, 236, 0)); }
+.tile.on .tile-label { color: var(--accent-dk); }
+
+.name-step { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 10px 0; }
+.name-input {
+  width: 100%; max-width: 320px; text-align: center; font-family: 'Baloo 2', sans-serif; font-weight: 600;
+  font-size: 22px; padding: 12px 16px; border-radius: 14px; border: 2px solid var(--line); color: var(--ink);
+  background: var(--card); box-shadow: 0 3px 0 var(--line);
+}
+.name-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 3px 0 var(--sel); }
+.hint { color: var(--muted); font-size: 13px; text-align: center; margin: 0; max-width: 300px; }
+
+.maker-foot {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 2;
+  display: flex; gap: 12px; justify-content: center; align-items: center;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--paper) 72%, rgba(247, 241, 228, 0));
+}
+
+@media (min-width: 640px) {
+  .tiles { grid-template-columns: repeat(auto-fill, minmax(134px, 1fr)); }
+}

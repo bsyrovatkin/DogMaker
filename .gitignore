@@ -6,3 +6,7 @@ dist
 *.tsbuildinfo
 vite.config.js
 vite.config.d.ts
+qa-out/
+public/bases/_raw/
+public/parts/_acc-raw/
+
