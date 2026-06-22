@@ -165,7 +165,7 @@ function spotMask(w, h, pattern, seed) {
 }
 
 // recolor a (resized) grayscale base: coat tint with floor + spots + re-asserted ink outline
-function recolorBase(base, coatHex, spotHex, seed, pattern) {
+function recolorBase(base, coatHex, spotHex, seed, pattern, soft) {
   const { width: w, height: h, data: src } = base
   const out = Buffer.alloc(w * h * 4)
   const [tr, tg, tb] = hex(coatHex)
@@ -180,6 +180,7 @@ function recolorBase(base, coatHex, spotHex, seed, pattern) {
     let cr, cg, cb
     if (spots && spots[p]) { cr = sr * shade; cg = sg * shade; cb = sb * shade }
     else { cr = tr * shade; cg = tg * shade; cb = tb * shade }
+    if (soft) { let lift = (lum - 0.5) / 0.5; if (lift < 0) lift = 0; lift = lift * lift * 0.66; cr += (255 - cr) * lift; cg += (255 - cg) * lift; cb += (255 - cb) * lift }
     let ink = clamp((INK_LUM - lum) / INK_LUM, 0, 1); ink = ink * ink
     out[i] = cr + (INK[0] - cr) * ink
     out[i + 1] = cg + (INK[1] - cg) * ink
@@ -468,19 +469,19 @@ function makeDog(o) {
   console.log('spot order:', patterns.join(', '))
 }
 
-// === new bases composed (recolor + eyes + muzzle) to check integrity + face position ===
+// === silky recolour: top row = old flat tint (soft off), bottom row = new soft pastel (soft on) ===
 {
-  const items = ['silky-floppy', 'silky-pointy', 'silky-round', 'silky-spaniel']
-  const tiles = items.map((name) => {
-    const base = recolorBase(baseImg(name), '#c98a5e', null, 7)
+  const colors = ['#c98a5e', '#e0aa55', '#b15a36', '#4b443c', '#e6a0b0', '#9db9dd']
+  const mk = (soft) => colors.map((col) => {
+    const base = recolorBase(baseImg('silky-floppy'), col, null, 7, null, soft)
     const c = canvasFor(base); placeBase(c, base)
     over(c.buf, c.W, c.H, inkPartImg('eyes-big'), EYE)
     const mp = muzzlePink('muzzle-tongue')
     over(c.buf, c.W, c.H, mp.part, MUZ, { pink: PINK, mask: mp.mask })
     return c
   })
-  const Wt = tiles[0].W, Ht = tiles[0].H, gap = 12, cols = 4
-  const rows = Math.ceil(tiles.length / cols)
+  const tiles = [...mk(false), ...mk(true)]
+  const Wt = tiles[0].W, Ht = tiles[0].H, gap = 12, cols = colors.length, rows = 2
   const sheet = { buf: Buffer.alloc((Wt * cols + gap * (cols - 1)) * (Ht * rows + gap * (rows - 1)) * 4), W: Wt * cols + gap * (cols - 1), H: Ht * rows + gap * (rows - 1) }
   tiles.forEach((t, k) => {
     const ox = (k % cols) * (Wt + gap), oy = ((k / cols) | 0) * (Ht + gap)
@@ -490,7 +491,7 @@ function makeDog(o) {
     }
   })
   writePng('new-bases.png', sheet)
-  console.log('new order:', items.join(', '))
+  console.log('silky: top row OLD (flat), bottom row NEW (soft):', colors.join(', '))
 }
 
 // === new coloured mouths on a dog (drawn as-is, no inkify) ===

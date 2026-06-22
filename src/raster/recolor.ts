@@ -163,6 +163,7 @@ export function recolor(
   height: number,
   hex: string,
   spots?: SpotOpts,
+  soft = false,
 ): HTMLCanvasElement {
   const canvas = document.createElement('canvas')
   const w = Math.round(width), h = Math.round(height)
@@ -183,6 +184,16 @@ export function recolor(
     let cr, cg, cb
     if (sp && sp[p]) { cr = sr * shade; cg = sg * shade; cb = sb * shade }
     else { cr = tr * shade; cg = tg * shade; cb = tb * shade }
+    // Soft coat (silky): the airy pencil sketch is a near-white body with fine strands. A plain tint
+    // multiplies the whole body to one flat coat colour (over-painted). Instead lift the LIGHT areas
+    // toward white so the body reads as soft pastel fur, while mid-tone strands keep the colour and
+    // dark line-art still inks below. The lift only grows in the upper luminance range.
+    if (soft) {
+      let lift = (lum - 0.5) / 0.5
+      if (lift < 0) lift = 0
+      lift = lift * lift * 0.66
+      cr += (255 - cr) * lift; cg += (255 - cg) * lift; cb += (255 - cb) * lift
+    }
     let ink = (INK_LUM - lum) / INK_LUM
     ink = ink < 0 ? 0 : ink > 1 ? 1 : ink
     ink *= ink
