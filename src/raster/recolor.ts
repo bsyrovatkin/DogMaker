@@ -184,17 +184,12 @@ export function recolor(
     let cr, cg, cb
     if (sp && sp[p]) { cr = sr * shade; cg = sg * shade; cb = sb * shade }
     else { cr = tr * shade; cg = tg * shade; cb = tb * shade }
-    // Soft coat (silky): the airy pencil sketch is a near-white body with fine strands. A plain tint
-    // multiplies the whole body to one flat coat colour (over-painted). Instead lift the LIGHT areas
-    // toward white so the body reads as soft pastel fur, while mid-tone strands keep the colour and
-    // dark line-art still inks below. The lift only grows in the upper luminance range.
-    if (soft) {
-      let lift = (lum - 0.5) / 0.5
-      if (lift < 0) lift = 0
-      lift = lift * lift * 0.66
-      cr += (255 - cr) * lift; cg += (255 - cg) * lift; cb += (255 - cb) * lift
-    }
-    let ink = (INK_LUM - lum) / INK_LUM
+    // Silky ('soft') is a fine pencil sketch: a near-white body with lots of thin strands. With the
+    // normal ink threshold those mid-tone strands just take the coat colour, so the whole dog reads as
+    // one flat repaint. Raise the ink threshold for silky so the strands ink into crisp dark fur lines
+    // over the vibrant body — colour stays saturated (not washed out), but the fur gets real definition.
+    const il = soft ? 0.62 : INK_LUM
+    let ink = (il - lum) / il
     ink = ink < 0 ? 0 : ink > 1 ? 1 : ink
     ink *= ink
     d[i] = cr + (INK[0] - cr) * ink

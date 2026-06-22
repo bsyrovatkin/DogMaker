@@ -165,9 +165,11 @@ function spotMask(w, h, pattern, seed) {
 }
 
 // recolor a (resized) grayscale base: coat tint with floor + spots + re-asserted ink outline
-function recolorBase(base, coatHex, spotHex, seed, pattern, soft) {
+function recolorBase(base, coatHex, spotHex, seed, pattern, soft, inkLum, liftK) {
   const { width: w, height: h, data: src } = base
   const out = Buffer.alloc(w * h * 4)
+  const IL = inkLum || INK_LUM
+  const LK = liftK == null ? 0.66 : liftK
   const [tr, tg, tb] = hex(coatHex)
   const spots = spotHex ? spotMask(w, h, pattern || 'blobs', seed || 7) : null
   const [sr, sg, sb] = spotHex ? hex(spotHex) : [0, 0, 0]
@@ -180,8 +182,8 @@ function recolorBase(base, coatHex, spotHex, seed, pattern, soft) {
     let cr, cg, cb
     if (spots && spots[p]) { cr = sr * shade; cg = sg * shade; cb = sb * shade }
     else { cr = tr * shade; cg = tg * shade; cb = tb * shade }
-    if (soft) { let lift = (lum - 0.5) / 0.5; if (lift < 0) lift = 0; lift = lift * lift * 0.66; cr += (255 - cr) * lift; cg += (255 - cg) * lift; cb += (255 - cb) * lift }
-    let ink = clamp((INK_LUM - lum) / INK_LUM, 0, 1); ink = ink * ink
+    void LK // (lift removed — silky now uses a higher ink threshold instead, see IL)
+    let ink = clamp((IL - lum) / IL, 0, 1); ink = ink * ink
     out[i] = cr + (INK[0] - cr) * ink
     out[i + 1] = cg + (INK[1] - cg) * ink
     out[i + 2] = cb + (INK[2] - cb) * ink
@@ -469,29 +471,28 @@ function makeDog(o) {
   console.log('spot order:', patterns.join(', '))
 }
 
-// === silky recolour: top row = old flat tint (soft off), bottom row = new soft pastel (soft on) ===
+// === FINAL silky treatment (soft=true -> inkLum 0.62, vibrant + crisp strands) across colours ===
 {
-  const colors = ['#c98a5e', '#e0aa55', '#b15a36', '#4b443c', '#e6a0b0', '#9db9dd']
-  const mk = (soft) => colors.map((col) => {
-    const base = recolorBase(baseImg('silky-floppy'), col, null, 7, null, soft)
-    const c = canvasFor(base); placeBase(c, base)
+  const colors = ['#5fd0d0', '#e0aa55', '#b15a36', '#4b443c', '#e6a0b0', '#f2ece2']
+  const tiles = colors.map((col) => {
+    const b = recolorBase(baseImg('silky-floppy'), col, null, 7, null, true, 0.62) // mirrors recolor.ts soft path
+    const c = canvasFor(b); placeBase(c, b)
     over(c.buf, c.W, c.H, inkPartImg('eyes-big'), EYE)
     const mp = muzzlePink('muzzle-tongue')
     over(c.buf, c.W, c.H, mp.part, MUZ, { pink: PINK, mask: mp.mask })
     return c
   })
-  const tiles = [...mk(false), ...mk(true)]
-  const Wt = tiles[0].W, Ht = tiles[0].H, gap = 12, cols = colors.length, rows = 2
-  const sheet = { buf: Buffer.alloc((Wt * cols + gap * (cols - 1)) * (Ht * rows + gap * (rows - 1)) * 4), W: Wt * cols + gap * (cols - 1), H: Ht * rows + gap * (rows - 1) }
+  const Wt = tiles[0].W, Ht = tiles[0].H, gap = 12, cols = tiles.length
+  const sheet = { buf: Buffer.alloc((Wt * cols + gap * (cols - 1)) * Ht * 4), W: Wt * cols + gap * (cols - 1), H: Ht }
   tiles.forEach((t, k) => {
-    const ox = (k % cols) * (Wt + gap), oy = ((k / cols) | 0) * (Ht + gap)
+    const ox = k * (Wt + gap)
     for (let y = 0; y < Ht; y++) for (let x = 0; x < Wt; x++) {
-      const si = (y * Wt + x) * 4, di = ((oy + y) * sheet.W + (ox + x)) * 4
+      const si = (y * Wt + x) * 4, di = (y * sheet.W + (ox + x)) * 4
       sheet.buf[di] = t.buf[si]; sheet.buf[di + 1] = t.buf[si + 1]; sheet.buf[di + 2] = t.buf[si + 2]; sheet.buf[di + 3] = t.buf[si + 3]
     }
   })
   writePng('new-bases.png', sheet)
-  console.log('silky: top row OLD (flat), bottom row NEW (soft):', colors.join(', '))
+  console.log('silky FINAL colours:', colors.join(', '))
 }
 
 // === new coloured mouths on a dog (drawn as-is, no inkify) ===
