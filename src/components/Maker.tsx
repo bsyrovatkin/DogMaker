@@ -70,7 +70,7 @@ const STEPS: { key: string; q: string }[] = [
   { key: 'ground', q: 'Where does it sit?' },
 ]
 
-const THUMB = 76
+const THUMB = 200
 
 export function Maker() {
   const [imgs, setImgs] = useState<Imgs | null>(null)
