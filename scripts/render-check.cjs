@@ -469,7 +469,7 @@ function makeDog(o) {
 
 // === new bases composed (recolor + eyes + muzzle) to check integrity + face position ===
 {
-  const items = ['dreads-floppy', 'dreads-pointy', 'dreads-round', 'dreads-spaniel', 'curly-spaniel', 'shaggy-spaniel', 'smooth-spaniel', 'fluffy-spaniel']
+  const items = ['silky-floppy', 'silky-pointy', 'silky-round', 'silky-spaniel']
   const tiles = items.map((name) => {
     const base = recolorBase(baseImg(name), '#c98a5e', null, 7)
     const c = canvasFor(base); placeBase(c, base)

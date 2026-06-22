@@ -8,6 +8,7 @@ export const FURS: Opt[] = [
   { id: 'smooth', label: 'Smooth' },
   { id: 'fluffy', label: 'Fluffy' },
   { id: 'dreads', label: 'Dreads' },
+  { id: 'silky', label: 'Silky' },
 ]
 
 export const EARS: Opt[] = [
