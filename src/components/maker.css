@@ -44,6 +44,9 @@ body { overflow-x: hidden; }
 .brand-btn { background: none; border: none; padding: 0; cursor: pointer; }
 .brand-btn:active { transform: rotate(-1.5deg) scale(0.96); }
 .install-btn { margin-top: 2px; font-size: 14px; padding: 9px 18px; }
+.mc-btn { background: #6aa84f; color: #fff; border-color: #4e8038; box-shadow: 0 3px 0 #4e8038; }
+.mc-btn:active { box-shadow: 0 1px 0 #4e8038; }
+.mc-btn:disabled { opacity: 0.6; }
 
 .modal-back {
   position: fixed; inset: 0; z-index: 10; background: rgba(40, 32, 22, 0.45);

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { preloadAll } from '../raster/assets'
 import { drawDogTo } from '../raster/renderDog'
 import { saveSticker } from '../raster/exportDog'
+import { exportMcpack } from '../raster/minecraftPack'
 import {
   FURS, EARS, COLORS, SPOT_PATTERNS, SPOT_COLORS, EYES, MUZZLES, SIZES, BODIES, ACCESSORIES, GROUNDS,
   DEFAULT_CONFIG, randomConfig, type MakerConfig,
@@ -111,6 +112,25 @@ function InstallHelp({ kind, onClose }: { kind: 'ios' | 'desktop'; onClose: () =
   )
 }
 
+function McHelp({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="modal-back" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <button type="button" className="modal-x" onClick={onClose} aria-label="Close">×</button>
+        <h3 className="modal-title">⛏️ Your dog is in Minecraft!</h3>
+        <p className="hint" style={{ textAlign: 'left', maxWidth: 'none' }}>Saved a <b>.mcpack</b> file. This is for <b>Minecraft on a phone/tablet (Bedrock)</b>.</p>
+        <ol className="howto">
+          <li><b>Tap the downloaded .mcpack</b> file — Minecraft opens and imports it.</li>
+          <li>Open a world → <b>Settings → Resource Packs</b> → activate <b>«… painting»</b>.</li>
+          <li>Build a <b>4×4 empty wall</b>, then place a <b>painting</b> on it — it becomes your dog! 🐶</li>
+        </ol>
+        <p className="hint" style={{ textAlign: 'left', maxWidth: 'none' }}>Every painting in that world becomes your puppy.</p>
+        <button type="button" className="cta" onClick={onClose}>Got it</button>
+      </div>
+    </div>
+  )
+}
+
 const STEPS: { key: string; q: string }[] = [
   { key: 'fur', q: 'What kind of fur?' },
   { key: 'ears', q: 'Pick the ears' },
@@ -132,6 +152,8 @@ export function Maker() {
   const [started, setStarted] = useState(false)
   const [sample] = useState<MakerConfig>(() => ({ ...randomConfig(), accessories: ['partyhat'], ground: 'grass' }))
   const [installEvt, setInstallEvt] = useState<BIPEvent | null>(null)
+  const [making, setMaking] = useState(false)
+  const [showMc, setShowMc] = useState(false)
 
   useEffect(() => { let live = true; preloadAll().then((m) => { if (live) setImgs(m) }); return () => { live = false } }, [])
 
@@ -160,6 +182,14 @@ export function Maker() {
     try { await saveSticker(cfg, imgs) }
     catch { alert("Sorry — couldn't make the sticker. Please try again.") }
     finally { setSaving(false) }
+  }
+
+  async function handleMinecraft() {
+    if (!imgs) return
+    setMaking(true)
+    try { await exportMcpack(cfg, imgs); setShowMc(true) }
+    catch { alert("Sorry — couldn't make the Minecraft pack. Please try again.") }
+    finally { setMaking(false) }
   }
 
   const tiles = useMemo(() => {
@@ -255,11 +285,15 @@ export function Maker() {
       <footer className="maker-foot">
         <button type="button" className="nav" disabled={step === 0} onClick={() => setStep((s) => Math.max(0, s - 1))}>← Back</button>
         {last ? (
-          <button type="button" className="cta" disabled={saving} onClick={handleSave}>{saving ? 'Saving…' : '🎉 Save sticker'}</button>
+          <>
+            <button type="button" className="cta" disabled={saving} onClick={handleSave}>{saving ? 'Saving…' : '🎉 Save sticker'}</button>
+            <button type="button" className="nav mc-btn" disabled={making} onClick={handleMinecraft}>{making ? '…' : '⛏️ Minecraft'}</button>
+          </>
         ) : (
           <button type="button" className="cta" onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}>Next →</button>
         )}
       </footer>
+      {showMc && <McHelp onClose={() => setShowMc(false)} />}
     </div>
     </>
   )
