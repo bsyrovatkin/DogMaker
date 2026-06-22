@@ -72,11 +72,16 @@ export const EYES: Opt[] = [
   { id: 'happy', label: 'Happy' }, { id: 'sleepy', label: 'Sleepy' }, { id: 'wide', label: 'Wide' },
 ]
 
-export const MUZZLES: { id: string; label: string; pink?: boolean }[] = [
+export const MUZZLES: { id: string; label: string; pink?: boolean; colored?: boolean }[] = [
   { id: 'smile', label: 'Smile' },
   { id: 'tongue', label: 'Tongue', pink: true },
   { id: 'o', label: 'Surprised', pink: true },
   { id: 'calm', label: 'Calm' },
+  // pre-coloured mouths — drawn as-is (not inkified)
+  { id: 'grin', label: 'Grin', colored: true },
+  { id: 'fang', label: 'Fang', colored: true },
+  { id: 'frown', label: 'Frown', colored: true },
+  { id: 'kiss', label: 'Kiss', colored: true },
 ]
 
 export const SIZES: { v: number; label: string }[] = [

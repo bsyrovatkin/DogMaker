@@ -22,7 +22,7 @@ export function composeFromConfig(cfg: MakerConfig, imgs: Imgs, size: number): H
     const def = accessoryFor(id, baseKey)
     return img && def ? [{ img, anchor: def.anchor, back: def.back, cropTop: def.cropTop }] : []
   })
-  const pink = MUZZLES.find((m) => m.id === cfg.muzzle)?.pink
+  const muzzleDef = MUZZLES.find((m) => m.id === cfg.muzzle)
 
   return composeDog({
     base,
@@ -36,7 +36,8 @@ export function composeFromConfig(cfg: MakerConfig, imgs: Imgs, size: number): H
     eyeAnchor: eyes ? eyeAnchorFor(baseKey) : undefined,
     muzzle: muzzle ?? undefined,
     muzzleAnchor: muzzle ? muzzleAnchorFor(baseKey) : undefined,
-    muzzlePink: pink,
+    muzzlePink: muzzleDef?.pink,
+    muzzleColored: muzzleDef?.colored,
     ground: ground ?? undefined,
     groundAnchor: ground ? GROUND_ANCHOR : undefined,
     accessories,

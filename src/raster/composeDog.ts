@@ -138,6 +138,8 @@ export interface PortraitSpec {
   muzzleAnchor?: Anchor
   /** Paint the muzzle's enclosed interior (tongue / open "O") pink. */
   muzzlePink?: boolean
+  /** Muzzle is already coloured (pink/tan) — draw it as-is, skip the grayscale inkify. */
+  muzzleColored?: boolean
   ground?: HTMLImageElement
   groundAnchor?: Anchor
   accessory?: HTMLImageElement
@@ -188,7 +190,7 @@ export function composeDog(spec: PortraitSpec): HTMLCanvasElement {
   ctx.drawImage(recolor(spec.base, W, baseH, spec.color, spots), 0, topPad)
 
   if (spec.eyes && spec.eyeAnchor) place(spec.eyes, spec.eyeAnchor, { inkify: true })
-  if (spec.muzzle && spec.muzzleAnchor) place(spec.muzzle, spec.muzzleAnchor, { inkify: true, pink: spec.muzzlePink ? PINK : undefined })
+  if (spec.muzzle && spec.muzzleAnchor) place(spec.muzzle, spec.muzzleAnchor, { inkify: !spec.muzzleColored, pink: spec.muzzleColored ? undefined : (spec.muzzlePink ? PINK : undefined) })
   if (spec.accessory && !spec.accessoryBack && spec.accessoryAnchor) place(spec.accessory, spec.accessoryAnchor, { cropTop: spec.accessoryCropTop })
   for (const a of spec.accessories ?? []) if (!a.back) place(a.img, a.anchor, { cropTop: a.cropTop })
 
