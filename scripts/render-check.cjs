@@ -467,4 +467,29 @@ function makeDog(o) {
   console.log('spot order:', patterns.join(', '))
 }
 
+// === new bases composed (recolor + eyes + muzzle) to check integrity + face position ===
+{
+  const items = ['dreads-floppy', 'dreads-pointy', 'dreads-round', 'dreads-spaniel', 'curly-spaniel', 'shaggy-spaniel', 'smooth-spaniel', 'fluffy-spaniel']
+  const tiles = items.map((name) => {
+    const base = recolorBase(baseImg(name), '#c98a5e', null, 7)
+    const c = canvasFor(base); placeBase(c, base)
+    over(c.buf, c.W, c.H, inkPartImg('eyes-big'), EYE)
+    const mp = muzzlePink('muzzle-tongue')
+    over(c.buf, c.W, c.H, mp.part, MUZ, { pink: PINK, mask: mp.mask })
+    return c
+  })
+  const Wt = tiles[0].W, Ht = tiles[0].H, gap = 12, cols = 4
+  const rows = Math.ceil(tiles.length / cols)
+  const sheet = { buf: Buffer.alloc((Wt * cols + gap * (cols - 1)) * (Ht * rows + gap * (rows - 1)) * 4), W: Wt * cols + gap * (cols - 1), H: Ht * rows + gap * (rows - 1) }
+  tiles.forEach((t, k) => {
+    const ox = (k % cols) * (Wt + gap), oy = ((k / cols) | 0) * (Ht + gap)
+    for (let y = 0; y < Ht; y++) for (let x = 0; x < Wt; x++) {
+      const si = (y * Wt + x) * 4, di = ((oy + y) * sheet.W + (ox + x)) * 4
+      sheet.buf[di] = t.buf[si]; sheet.buf[di + 1] = t.buf[si + 1]; sheet.buf[di + 2] = t.buf[si + 2]; sheet.buf[di + 3] = t.buf[si + 3]
+    }
+  })
+  writePng('new-bases.png', sheet)
+  console.log('new order:', items.join(', '))
+}
+
 console.log('done')

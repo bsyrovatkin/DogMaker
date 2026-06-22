@@ -7,12 +7,14 @@ export const FURS: Opt[] = [
   { id: 'shaggy', label: 'Shaggy' },
   { id: 'smooth', label: 'Smooth' },
   { id: 'fluffy', label: 'Fluffy' },
+  { id: 'dreads', label: 'Dreads' },
 ]
 
 export const EARS: Opt[] = [
   { id: 'floppy', label: 'Floppy' },
   { id: 'pointy', label: 'Pointy' },
   { id: 'round', label: 'Round' },
+  { id: 'spaniel', label: 'Spaniel' },
 ]
 
 export const COLORS: { hex: string; label: string }[] = [

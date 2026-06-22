@@ -11,12 +11,21 @@ const DIR = 'D:/Projects/DogMaker/public/bases'
 const RAW = path.join(DIR, '_raw')
 if (!fs.existsSync(RAW)) fs.mkdirSync(RAW)
 
-const FURS = ['curly', 'shaggy', 'smooth', 'fluffy']
-const EARS = ['floppy', 'pointy', 'round']
+const FURS = ['curly', 'shaggy', 'smooth', 'fluffy', 'dreads']
+const EARS = ['floppy', 'pointy', 'round', 'spaniel']
+// only the 20 combos that actually exist as files get baked; the rest are skipped
+const COMBOS = [
+  'curly-floppy', 'curly-pointy', 'curly-round', 'curly-spaniel',
+  'shaggy-floppy', 'shaggy-pointy', 'shaggy-round', 'shaggy-spaniel',
+  'smooth-floppy', 'smooth-pointy', 'smooth-round', 'smooth-spaniel',
+  'fluffy-floppy', 'fluffy-pointy', 'fluffy-round', 'fluffy-spaniel',
+  'dreads-floppy', 'dreads-pointy', 'dreads-round', 'dreads-spaniel',
+]
 const THRESH = { 'shaggy-floppy': 245 } // default below
 const DEFAULT_T = 232
 
 for (const fur of FURS) for (const ears of EARS) {
+  if (!COMBOS.includes(`${fur}-${ears}`)) continue
   const name = `${fur}-${ears}.png`
   const dst = path.join(DIR, name)
   const rawFile = path.join(RAW, name)

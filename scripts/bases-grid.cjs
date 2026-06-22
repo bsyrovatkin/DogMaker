@@ -1,7 +1,7 @@
 // Render all 12 baked bases as flat caramel silhouettes to spot flood-leak holes.
 const fs = require('fs'), { PNG } = require('pngjs'), path = require('path')
 const D = 'D:/Projects/DogMaker/public/bases'
-const furs = ['curly', 'shaggy', 'smooth', 'fluffy'], ears = ['floppy', 'pointy', 'round']
+const furs = ['curly', 'shaggy', 'smooth', 'fluffy', 'dreads'], ears = ['floppy', 'pointy', 'round', 'spaniel']
 const TW = 120
 const samp = (d, w, h, x, y) => { x = Math.max(0, Math.min(w - 1, Math.round(x))); y = Math.max(0, Math.min(h - 1, Math.round(y))); const i = (y * w + x) * 4; return [d[i], d[i + 1], d[i + 2], d[i + 3]] }
 const sheet = new PNG({ width: ears.length * TW, height: furs.length * TW })
