@@ -261,7 +261,8 @@ function over(canvas, W, H, part, anchor, opts = {}) {
 
 // ---- assets ----
 const RW = 460
-const baseImg = (n) => resize(cleanBaseBg(load(`bases/${n}.png`)), RW)
+// bases are already baked transparent — load as-is (re-running cleanBaseBg would eat the light body)
+const baseImg = (n) => resize(load(`bases/${n}.png`), RW)
 const partImg = (n) => { const p = load(`parts/${n}.png`); return cleanPart(p) }
 const inkPartImg = (n) => inkify(cleanPart(load(`parts/${n}.png`)))
 const PINK = [233, 120, 140]
