@@ -1,7 +1,7 @@
 import { composeDog } from './composeDog'
 import { eyeAnchorFor, muzzleAnchorFor, GROUND_ANCHOR, accessoryFor } from './anchors'
 import { baseUrl, partUrl } from './assets'
-import { MUZZLES, type MakerConfig } from './catalog'
+import { EYES, MUZZLES, type MakerConfig } from './catalog'
 import type { SpotPattern } from './recolor'
 
 type Imgs = Map<string, HTMLImageElement>
@@ -34,6 +34,7 @@ export function composeFromConfig(cfg: MakerConfig, imgs: Imgs, size: number): H
     spotSeed: 7,
     eyes: eyes ?? undefined,
     eyeAnchor: eyes ? eyeAnchorFor(baseKey) : undefined,
+    eyeColored: EYES.find((e) => e.id === cfg.eyes)?.colored,
     muzzle: muzzle ?? undefined,
     muzzleAnchor: muzzle ? muzzleAnchorFor(baseKey) : undefined,
     muzzlePink: muzzleDef?.pink,

@@ -134,6 +134,8 @@ export interface PortraitSpec {
   spotPattern?: 'blobs' | 'dots' | 'patches' | 'splash' | 'stripes' | 'cheetah' | 'hearts' | 'stars'
   eyes?: HTMLImageElement
   eyeAnchor?: Anchor
+  /** Eyes are already coloured (hearts/stars) — draw as-is, skip the grayscale inkify. */
+  eyeColored?: boolean
   muzzle?: HTMLImageElement
   muzzleAnchor?: Anchor
   /** Paint the muzzle's enclosed interior (tongue / open "O") pink. */
@@ -189,7 +191,7 @@ export function composeDog(spec: PortraitSpec): HTMLCanvasElement {
   const spots = spec.spotColor ? { hex: spec.spotColor, seed: spec.spotSeed, pattern: spec.spotPattern } : undefined
   ctx.drawImage(recolor(spec.base, W, baseH, spec.color, spots), 0, topPad)
 
-  if (spec.eyes && spec.eyeAnchor) place(spec.eyes, spec.eyeAnchor, { inkify: true })
+  if (spec.eyes && spec.eyeAnchor) place(spec.eyes, spec.eyeAnchor, { inkify: !spec.eyeColored })
   if (spec.muzzle && spec.muzzleAnchor) place(spec.muzzle, spec.muzzleAnchor, { inkify: !spec.muzzleColored, pink: spec.muzzleColored ? undefined : (spec.muzzlePink ? PINK : undefined) })
   if (spec.accessory && !spec.accessoryBack && spec.accessoryAnchor) place(spec.accessory, spec.accessoryAnchor, { cropTop: spec.accessoryCropTop })
   for (const a of spec.accessories ?? []) if (!a.back) place(a.img, a.anchor, { cropTop: a.cropTop })

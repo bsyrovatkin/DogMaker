@@ -67,9 +67,12 @@ export const SPOT_COLORS: { label: string; hex: string }[] = [
   { label: 'Red', hex: '#e24b4a' },
 ]
 
-export const EYES: Opt[] = [
+export const EYES: { id: string; label: string; colored?: boolean }[] = [
   { id: 'dots', label: 'Dot' }, { id: 'big', label: 'Big' }, { id: 'sparkle', label: 'Sparkle' },
   { id: 'happy', label: 'Happy' }, { id: 'sleepy', label: 'Sleepy' }, { id: 'wide', label: 'Wide' },
+  // pre-coloured eyes — drawn as-is (not inkified)
+  { id: 'heart', label: 'Heart', colored: true }, { id: 'star', label: 'Star', colored: true },
+  { id: 'angry', label: 'Angry', colored: true }, { id: 'grumpy', label: 'Grumpy', colored: true },
 ]
 
 export const MUZZLES: { id: string; label: string; pink?: boolean; colored?: boolean }[] = [

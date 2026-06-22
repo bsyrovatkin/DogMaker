@@ -515,4 +515,27 @@ function makeDog(o) {
   console.log('mouth order:', mouths.join(', '))
 }
 
+// === new coloured eyes on a dog (drawn as-is, no inkify) ===
+{
+  const eyez = ['heart', 'star', 'angry', 'grumpy']
+  const tiles = eyez.map((id) => {
+    const base = recolorBase(baseImg('curly-floppy'), '#e0aa55', null, 7)
+    const c = canvasFor(base); placeBase(c, base)
+    over(c.buf, c.W, c.H, partImg('eyes-' + id), EYE) // partImg = no inkify -> keeps the colours
+    over(c.buf, c.W, c.H, inkPartImg('muzzle-smile'), MUZ)
+    return c
+  })
+  const Wt = tiles[0].W, Ht = tiles[0].H, gap = 12
+  const sheet = { buf: Buffer.alloc((Wt * 4 + gap * 3) * Ht * 4), W: Wt * 4 + gap * 3, H: Ht }
+  tiles.forEach((t, k) => {
+    const ox = k * (Wt + gap)
+    for (let y = 0; y < Ht; y++) for (let x = 0; x < Wt; x++) {
+      const si = (y * Wt + x) * 4, di = (y * sheet.W + ox + x) * 4
+      sheet.buf[di] = t.buf[si]; sheet.buf[di + 1] = t.buf[si + 1]; sheet.buf[di + 2] = t.buf[si + 2]; sheet.buf[di + 3] = t.buf[si + 3]
+    }
+  })
+  writePng('eyes-dog.png', sheet)
+  console.log('eye order:', eyez.join(', '))
+}
+
 console.log('done')
