@@ -11,18 +11,25 @@ const DIR = 'D:/Projects/DogMaker/public/bases'
 const RAW = path.join(DIR, '_raw')
 if (!fs.existsSync(RAW)) fs.mkdirSync(RAW)
 
-const FURS = ['curly', 'shaggy', 'smooth', 'fluffy', 'dreads']
+const FURS = ['curly', 'shaggy', 'smooth', 'fluffy', 'dreads', 'silky']
 const EARS = ['floppy', 'pointy', 'round', 'spaniel']
-// only the 20 combos that actually exist as files get baked; the rest are skipped
+// only the combos that actually exist as files get baked; the rest are skipped
 const COMBOS = [
   'curly-floppy', 'curly-pointy', 'curly-round', 'curly-spaniel',
   'shaggy-floppy', 'shaggy-pointy', 'shaggy-round', 'shaggy-spaniel',
   'smooth-floppy', 'smooth-pointy', 'smooth-round', 'smooth-spaniel',
   'fluffy-floppy', 'fluffy-pointy', 'fluffy-round', 'fluffy-spaniel',
   'dreads-floppy', 'dreads-pointy', 'dreads-round', 'dreads-spaniel',
+  'silky-floppy', 'silky-pointy', 'silky-round', 'silky-spaniel',
 ]
-const THRESH = { 'shaggy-floppy': 245 } // default below
+// silky's sketch sits on a white(254)+grey checkerboard. On floppy/round/spaniel the grey square (~241)
+// is lighter than the body (~237), so a strict 240 cleanly removes both checker colours and keeps the
+// solid body (no holes -> no fill -> nothing can bleed past the strands).
+const THRESH = { 'shaggy-floppy': 245, 'silky-floppy': 240, 'silky-round': 240, 'silky-spaniel': 240, 'silky-pointy': 240 }
 const DEFAULT_T = 232
+// optional per-fur tone-map: silky's near-white body would recolour far paler than the grey-bodied
+// furs, so darken it to a mid-tone after the bg is removed (matches curly/shaggy richness).
+const TONE = { silky: 0.72 }
 
 for (const fur of FURS) for (const ears of EARS) {
   if (!COMBOS.includes(`${fur}-${ears}`)) continue
@@ -72,6 +79,10 @@ for (const fur of FURS) for (const ears of EARS) {
   }
   let speck = 0
   for (let s = 0; s < w * h; s++) if (d[s * 4 + 3] >= 40 && lab[s] !== best) { d[s * 4 + 3] = 0; speck++ }
+
+  // optional tone-map (silky): darken the surviving opaque dog so its near-white body recolours richly
+  const tone = TONE[fur]
+  if (tone) for (let s = 0; s < w * h; s++) { if (d[s * 4 + 3] < 40) continue; const i = s * 4; d[i] = Math.round(d[i] * tone); d[i + 1] = Math.round(d[i + 1] * tone); d[i + 2] = Math.round(d[i + 2] * tone) }
 
   fs.writeFileSync(dst, PNG.sync.write(png))
   console.log(name, 'T=' + T, 'transparent px', removed, 'speckles removed', speck, '/', w * h)
