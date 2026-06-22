@@ -180,14 +180,15 @@ export function recolor(
     const i = p * 4
     if (d[i + 3] === 0) continue
     const lum = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255
-    const shade = FLOOR + (1 - FLOOR) * lum
+    // Silky ('soft') is a fine pencil sketch: a near-white body (lum ~0.9) with lots of thin strands.
+    // 1) Its near-white body would recolour to almost the raw hex — far paler than the other furs,
+    //    whose mid-grey bodies multiply the colour down. Scale lum so the body reads as rich as them.
+    // 2) Raise the ink threshold so the mid-tone strands ink into crisp dark fur lines (real texture)
+    //    instead of all taking the coat colour and looking like one flat repaint.
+    const shade = FLOOR + (1 - FLOOR) * (soft ? lum * 0.7 : lum)
     let cr, cg, cb
     if (sp && sp[p]) { cr = sr * shade; cg = sg * shade; cb = sb * shade }
     else { cr = tr * shade; cg = tg * shade; cb = tb * shade }
-    // Silky ('soft') is a fine pencil sketch: a near-white body with lots of thin strands. With the
-    // normal ink threshold those mid-tone strands just take the coat colour, so the whole dog reads as
-    // one flat repaint. Raise the ink threshold for silky so the strands ink into crisp dark fur lines
-    // over the vibrant body — colour stays saturated (not washed out), but the fur gets real definition.
     const il = soft ? 0.62 : INK_LUM
     let ink = (il - lum) / il
     ink = ink < 0 ? 0 : ink > 1 ? 1 : ink
