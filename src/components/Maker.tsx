@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { preloadAll } from '../raster/assets'
 import { drawDogTo } from '../raster/renderDog'
-import { saveSticker } from '../raster/exportDog'
+import { downloadPhoto, sharePhoto, shareWhatsAppSticker } from '../raster/exportDog'
 import { exportMcpack } from '../raster/minecraftPack'
 import {
   FURS, EARS, COLORS, SPOT_PATTERNS, SPOT_COLORS, EYES, MUZZLES, SIZES, BODIES, ACCESSORIES, GROUNDS,
@@ -205,11 +205,12 @@ export function Maker() {
   const last = step === STEPS.length - 1
   const cur = STEPS[step]
 
-  async function handleSave() {
-    if (!imgs) return
+  // run an async export action with a shared "busy" guard so the chunky buttons can't double-fire
+  async function run(fn: (cfg: MakerConfig, imgs: Imgs) => Promise<void>) {
+    if (!imgs || saving) return
     setSaving(true)
-    try { await saveSticker(cfg, imgs) }
-    catch { alert("Sorry — couldn't make the sticker. Please try again.") }
+    try { await fn(cfg, imgs) }
+    catch { alert("Sorry — that didn't work. Please try again.") }
     finally { setSaving(false) }
   }
 
@@ -308,15 +309,22 @@ export function Maker() {
         )}
       </section>
 
-      <footer className="maker-foot">
-        <button type="button" className="nav" disabled={step === 0} onClick={() => setStep((s) => Math.max(0, s - 1))}>← Back</button>
+      <footer className={`maker-foot${last ? ' foot-share' : ''}`}>
         {last ? (
           <>
-            <button type="button" className="cta" disabled={saving} onClick={handleSave}>{saving ? 'Saving…' : '🎉 Save sticker'}</button>
-            <button type="button" className="nav mc-btn" onClick={() => setShowMc(true)}>⛏️ Minecraft</button>
+            <button type="button" className="back-mini" onClick={() => setStep((s) => Math.max(0, s - 1))} aria-label="Back">←</button>
+            <div className="share-grid">
+              <button type="button" className="cta wa-btn" disabled={saving} onClick={() => run(shareWhatsAppSticker)}>💚 WhatsApp</button>
+              <button type="button" className="cta save-btn" disabled={saving} onClick={() => run(downloadPhoto)}>📷 Save photo</button>
+              <button type="button" className="cta share-btn" disabled={saving} onClick={() => run(sharePhoto)}>📤 Share</button>
+              <button type="button" className="cta mc-btn" disabled={saving} onClick={() => setShowMc(true)}>⛏️ Minecraft</button>
+            </div>
           </>
         ) : (
-          <button type="button" className="cta" onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}>Next →</button>
+          <>
+            <button type="button" className="nav" disabled={step === 0} onClick={() => setStep((s) => Math.max(0, s - 1))}>← Back</button>
+            <button type="button" className="cta" onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}>Next →</button>
+          </>
         )}
       </footer>
       {showMc && <McHelp onClose={() => setShowMc(false)} onDownload={downloadMcpack} />}
