@@ -1,4 +1,5 @@
 import { renderSticker } from './renderDog'
+import { isIOS } from './platform'
 import type { MakerConfig } from './catalog'
 
 export const STICKER_SIZE = 1024
@@ -43,38 +44,57 @@ async function tryShare(file: File, title: string): Promise<boolean> {
   return false
 }
 
-/** Save the dog to the device as a transparent PNG. */
+/**
+ * Deliver a file to the user. `primary: 'share'` opens the share sheet first (the only reliable way to
+ * save / hand off on iOS), `'download'` saves straight to disk (works on Android/desktop). Either way we
+ * fall back to the other path if the first isn't available.
+ */
+export async function deliver(blob: Blob, fname: string, type: string, title: string, primary: 'share' | 'download'): Promise<void> {
+  if (primary === 'share') {
+    const file = new File([blob], fname, { type })
+    if (await tryShare(file, title)) return
+    download(blob, fname) // share unavailable (e.g. desktop) → download
+  } else {
+    download(blob, fname)
+  }
+}
+
+/**
+ * Save the dog as a transparent PNG.
+ * Android/desktop: downloads the file. iOS: opens the share sheet so the user taps "Save Image" (iOS
+ * Safari can't download straight to Photos).
+ */
 export async function downloadPhoto(cfg: MakerConfig, imgs: Map<string, HTMLImageElement>): Promise<void> {
   const blob = await toBlob(renderSticker(cfg, imgs, STICKER_SIZE), 'image/png')
   if (!blob) throw new Error('toBlob returned null')
-  download(blob, `${safeName(cfg)}.png`)
+  await deliver(blob, `${safeName(cfg)}.png`, 'image/png', cfg.name || "My Margo's dog", isIOS ? 'share' : 'download')
 }
 
 /** Share the dog as a PNG via the OS share sheet (any app or contact); fall back to download. */
 export async function sharePhoto(cfg: MakerConfig, imgs: Map<string, HTMLImageElement>): Promise<void> {
   const blob = await toBlob(renderSticker(cfg, imgs, STICKER_SIZE), 'image/png')
   if (!blob) throw new Error('toBlob returned null')
-  const file = new File([blob], `${safeName(cfg)}.png`, { type: 'image/png' })
-  if (!(await tryShare(file, cfg.name || "My Margo's dog"))) download(blob, file.name)
+  await deliver(blob, `${safeName(cfg)}.png`, 'image/png', cfg.name || "My Margo's dog", 'share')
 }
 
 /**
- * Share the dog in WhatsApp sticker format — a 512² transparent WebP (under 100 KB) — via the share
- * sheet, so the user can pick WhatsApp and send it to a chat. (Adding it to the actual sticker *tray*
- * isn't possible from a web app; that needs a native sticker-pack app.) WebP falls back to PNG where
- * the browser can't encode WebP (older Safari).
+ * Share the dog as a WhatsApp sticker-format image (512², transparent, under 100 KB) via the share
+ * sheet, so the user can pick WhatsApp. Android gets WebP (the canonical sticker format & smaller); iOS
+ * gets PNG because iOS WhatsApp handles a shared WebP poorly. (Adding it to the actual sticker *tray*
+ * isn't possible from a web app — that needs a native sticker-pack app.)
  */
 export async function shareWhatsAppSticker(cfg: MakerConfig, imgs: Map<string, HTMLImageElement>): Promise<void> {
   const canvas = renderSticker(cfg, imgs, WHATSAPP_SIZE)
-  let blob = await toBlob(canvas, 'image/webp', 0.92)
-  let ext = 'webp'
   let type = 'image/webp'
+  let ext = 'webp'
+  let blob: Blob | null = null
+  if (!isIOS) blob = await toBlob(canvas, 'image/webp', 0.92)
   if (!blob || blob.type !== 'image/webp') {
+    // iOS, or a browser that can't encode WebP → PNG
     blob = await toBlob(canvas, 'image/png')
-    ext = 'png'
     type = 'image/png'
+    ext = 'png'
   }
   if (!blob) throw new Error('toBlob returned null')
-  const file = new File([blob], `${safeName(cfg)}-sticker.${ext}`, { type })
-  if (!(await tryShare(file, "Margo's dog sticker"))) download(blob, file.name)
+  await deliver(blob, `${safeName(cfg)}-sticker.${ext}`, type, "Margo's dog sticker", 'share')
 }

@@ -3,6 +3,7 @@ import { preloadAll } from '../raster/assets'
 import { drawDogTo } from '../raster/renderDog'
 import { downloadPhoto, sharePhoto, shareWhatsAppSticker } from '../raster/exportDog'
 import { exportMcpack } from '../raster/minecraftPack'
+import { isIOS } from '../raster/platform'
 import {
   FURS, EARS, COLORS, SPOT_PATTERNS, SPOT_COLORS, EYES, MUZZLES, SIZES, BODIES, ACCESSORIES, GROUNDS,
   DEFAULT_CONFIG, randomConfig, type MakerConfig,
@@ -57,10 +58,6 @@ function PaperBg() {
   )
 }
 
-function isIOS(): boolean {
-  const ua = navigator.userAgent
-  return /iPad|iPhone|iPod/.test(ua) || (ua.includes('Mac') && 'ontouchend' in document)
-}
 function isStandalone(): boolean {
   return window.matchMedia?.('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true
 }
@@ -68,7 +65,7 @@ function isStandalone(): boolean {
 function StartScreen({ imgs, sample, onStart, canInstall, onInstall }: { imgs: Imgs; sample: MakerConfig; onStart: () => void; canInstall: boolean; onInstall: () => void }) {
   const [howTo, setHowTo] = useState<null | 'ios' | 'desktop'>(null)
   const installed = isStandalone()
-  const ios = isIOS()
+  const ios = isIOS
   const showInstall = !installed
   function handleInstall() {
     if (canInstall) { onInstall(); return }
@@ -130,8 +127,12 @@ function McHelp({ onClose, onDownload }: { onClose: () => void; onDownload: () =
 
         <p className="substep" style={{ marginTop: 14 }}>① Get the pack</p>
         <ol className="howto" start={1}>
-          <li>Tap the big <b>“Download”</b> button below. It saves a file named <b>…​.mcpack</b>.</li>
-          <li><b>Open that file</b> — tap it in the download pop-up (or in your <b>Files / Downloads</b> app). Minecraft opens by itself and shows <b>“Importing…”</b>, then <b>“Successfully imported”</b>. 🎉</li>
+          <li>Tap the big button below. It makes a file named <b>…​.mcpack</b>.</li>
+          {isIOS ? (
+            <li>In the <b>share sheet</b> tap <b>“Copy to Minecraft”</b> (or <b>“Save to Files”</b>, then open the file from the <b>Files</b> app). Minecraft opens and shows <b>“Importing…”</b>, then <b>“Successfully imported”</b>. 🎉</li>
+          ) : (
+            <li><b>Open that file</b> — tap it in the download pop-up (or in your <b>Files / Downloads</b> app). Minecraft opens by itself and shows <b>“Importing…”</b>, then <b>“Successfully imported”</b>. 🎉</li>
+          )}
         </ol>
 
         <p className="substep">② Turn it on in a world</p>
@@ -153,9 +154,9 @@ function McHelp({ onClose, onDownload }: { onClose: () => void; onDownload: () =
         </p>
 
         <button type="button" className="cta mc-btn" onClick={download} disabled={state === 'making'}>
-          {state === 'making' ? 'Making the pack…' : state === 'done' ? '✓ Downloaded — now open the file' : '⬇️ Download the pack'}
+          {state === 'making' ? 'Making the pack…' : state === 'done' ? (isIOS ? '✓ Sent — now open it in Minecraft' : '✓ Downloaded — now open the file') : (isIOS ? '📤 Get the pack' : '⬇️ Download the pack')}
         </button>
-        {state === 'done' && <p className="start-note" style={{ marginTop: 8 }}>Saved! Find it in your Downloads and tap it to open Minecraft.</p>}
+        {state === 'done' && <p className="start-note" style={{ marginTop: 8 }}>{isIOS ? 'In the share sheet pick “Copy to Minecraft”, or “Save to Files” and tap it there.' : 'Saved! Find it in your Downloads and tap it to open Minecraft.'}</p>}
       </div>
     </div>
   )

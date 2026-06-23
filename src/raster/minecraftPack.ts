@@ -3,6 +3,8 @@
 // painting region, so any painting the kid places shows their puppy. Tablet-friendly: tapping
 // the downloaded .mcpack imports it into Minecraft (Bedrock / Pocket Edition).
 import { renderSticker } from './renderDog'
+import { deliver } from './exportDog'
+import { isIOS } from './platform'
 import type { MakerConfig } from './catalog'
 
 // ---- minimal store-only ZIP (no deps; PNGs are already compressed) ----
@@ -111,9 +113,7 @@ export async function exportMcpack(cfg: MakerConfig, imgs: Map<string, HTMLImage
   ]
   const blob = zipStore(files)
   const safe = (cfg.name?.trim() || 'margos-dog').replace(/[^\w-]+/g, '_').slice(0, 40) || 'margos-dog'
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url; a.download = `${safe}.mcpack`
-  document.body.appendChild(a); a.click(); a.remove()
-  URL.revokeObjectURL(url)
+  // iOS (esp. installed PWA) can't download to a folder the user can reach, but the share sheet offers
+  // "Copy to Minecraft"; Android downloads the .mcpack so the user taps it to import.
+  await deliver(blob, `${safe}.mcpack`, 'application/octet-stream', `${name} painting`, isIOS ? 'share' : 'download')
 }
