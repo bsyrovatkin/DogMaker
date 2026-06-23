@@ -73,7 +73,7 @@ function StartScreen({ imgs, sample, onStart, canInstall, onInstall }: { imgs: I
   }
   return (
     <div className="start">
-      <h1 className="brand">Margo's Dogs</h1>
+      <h1 className="brand">Dog Maker</h1>
       <p className="tag">make your very own puppy — and keep it as a sticker</p>
       <div className="start-card"><DogView cfg={sample} imgs={imgs} px={300} /></div>
       <button type="button" className="cta start-cta" onClick={onStart}>Start ▶</button>
@@ -95,12 +95,12 @@ function InstallHelp({ kind, onClose }: { kind: 'ios' | 'desktop'; onClose: () =
             <li>Open this page in <b>Safari</b> (if you’re in another browser, copy the link and paste it in Safari).</li>
             <li>Tap the <b>Share</b> button <span className="key">⬆️</span> at the bottom of the screen.</li>
             <li>Scroll and tap <b>«Add to Home Screen»</b> <span className="key">＋</span>.</li>
-            <li>Tap <b>Add</b>. The Margo’s Dogs icon will appear on your home screen.</li>
+            <li>Tap <b>Add</b>. The Dog Maker icon will appear on your home screen.</li>
           </ol>
         ) : (
           <ol className="howto">
             <li>In Chrome or Edge, click the <b>install</b> icon <span className="key">⊕</span> in the address bar.</li>
-            <li>Or open the menu <span className="key">⋮</span> and pick <b>«Install Margo’s Dogs»</b>.</li>
+            <li>Or open the menu <span className="key">⋮</span> and pick <b>«Install Dog Maker»</b>.</li>
           </ol>
         )}
         <button type="button" className="cta" onClick={onClose}>Got it</button>
@@ -265,7 +265,7 @@ export function Maker() {
     <PaperBg />
     <div className="maker">
       <header className="maker-head">
-        <button type="button" className="brand brand-btn" onClick={() => setStarted(false)} aria-label="Back to start">Margo's Dogs</button>
+        <button type="button" className="brand brand-btn" onClick={() => setStarted(false)} aria-label="Back to start">Dog Maker</button>
         <div className="head-actions">
           <button type="button" className="ghost" onClick={() => setCfg({ ...randomConfig(), name: cfg.name })}>🎲 Surprise me</button>
           <button type="button" className="ghost" onClick={() => { setCfg(DEFAULT_CONFIG); setStep(0) }}>↺ Start over</button>

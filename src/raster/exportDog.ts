@@ -7,7 +7,7 @@ export const STICKER_SIZE = 1024
 const WHATSAPP_SIZE = 512
 
 function safeName(cfg: MakerConfig): string {
-  return (cfg.name?.trim() || 'margos-dog').replace(/[^\w-]+/g, '_').slice(0, 40) || 'margos-dog'
+  return (cfg.name?.trim() || 'dog').replace(/[^\w-]+/g, '_').slice(0, 40) || 'dog'
 }
 
 function toBlob(canvas: HTMLCanvasElement, type: string, quality?: number): Promise<Blob | null> {
@@ -67,14 +67,14 @@ export async function deliver(blob: Blob, fname: string, type: string, title: st
 export async function downloadPhoto(cfg: MakerConfig, imgs: Map<string, HTMLImageElement>): Promise<void> {
   const blob = await toBlob(renderSticker(cfg, imgs, STICKER_SIZE), 'image/png')
   if (!blob) throw new Error('toBlob returned null')
-  await deliver(blob, `${safeName(cfg)}.png`, 'image/png', cfg.name || "My Margo's dog", isIOS ? 'share' : 'download')
+  await deliver(blob, `${safeName(cfg)}.png`, 'image/png', cfg.name || 'My dog', isIOS ? 'share' : 'download')
 }
 
 /** Share the dog as a PNG via the OS share sheet (any app or contact); fall back to download. */
 export async function sharePhoto(cfg: MakerConfig, imgs: Map<string, HTMLImageElement>): Promise<void> {
   const blob = await toBlob(renderSticker(cfg, imgs, STICKER_SIZE), 'image/png')
   if (!blob) throw new Error('toBlob returned null')
-  await deliver(blob, `${safeName(cfg)}.png`, 'image/png', cfg.name || "My Margo's dog", 'share')
+  await deliver(blob, `${safeName(cfg)}.png`, 'image/png', cfg.name || 'My dog', 'share')
 }
 
 /**
@@ -96,5 +96,5 @@ export async function shareWhatsAppSticker(cfg: MakerConfig, imgs: Map<string, H
     ext = 'png'
   }
   if (!blob) throw new Error('toBlob returned null')
-  await deliver(blob, `${safeName(cfg)}-sticker.${ext}`, type, "Margo's dog sticker", 'share')
+  await deliver(blob, `${safeName(cfg)}-sticker.${ext}`, type, 'Dog sticker', 'share')
 }

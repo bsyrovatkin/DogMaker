@@ -99,10 +99,10 @@ export async function exportMcpack(cfg: MakerConfig, imgs: Map<string, HTMLImage
   const dog = renderSticker(cfg, imgs, 512)
   const atlas = buildAtlas(dog)
   const icon = renderSticker(cfg, imgs, 128)
-  const name = (cfg.name?.trim() || "Margo's dog")
+  const name = (cfg.name?.trim() || 'My dog')
   const manifest = {
     format_version: 2,
-    header: { name: `${name} painting`, description: 'Every painting is your puppy! Made with Margo\'s Dogs.', uuid: uuid(), version: [1, 0, 0], min_engine_version: [1, 16, 0] },
+    header: { name: `${name} painting`, description: 'Every painting is your puppy! Made with Dog Maker.', uuid: uuid(), version: [1, 0, 0], min_engine_version: [1, 16, 0] },
     modules: [{ type: 'resources', uuid: uuid(), version: [1, 0, 0] }],
   }
   const enc = new TextEncoder()
@@ -112,7 +112,7 @@ export async function exportMcpack(cfg: MakerConfig, imgs: Map<string, HTMLImage
     { name: 'textures/painting/kz.png', data: await canvasToBytes(atlas) },
   ]
   const blob = zipStore(files)
-  const safe = (cfg.name?.trim() || 'margos-dog').replace(/[^\w-]+/g, '_').slice(0, 40) || 'margos-dog'
+  const safe = (cfg.name?.trim() || 'dog').replace(/[^\w-]+/g, '_').slice(0, 40) || 'dog'
   // iOS (esp. installed PWA) can't download to a folder the user can reach, but the share sheet offers
   // "Copy to Minecraft"; Android downloads the .mcpack so the user taps it to import.
   await deliver(blob, `${safe}.mcpack`, 'application/octet-stream', `${name} painting`, isIOS ? 'share' : 'download')

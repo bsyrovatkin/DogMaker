@@ -81,8 +81,8 @@ export default defineConfig({
         ],
       },
       manifest: {
-        name: "Margo's Dogs",
-        short_name: "Margo's Dogs",
+        name: 'Dog Maker',
+        short_name: 'Dog Maker',
         description: 'Make your own puppy and keep it as a sticker.',
         theme_color: '#e08a4a',
         background_color: '#fef7ee',
