@@ -191,14 +191,14 @@ body { overflow-x: hidden; }
   background: linear-gradient(to top, var(--paper) 72%, rgba(247, 241, 228, 0));
 }
 
-/* ---- final step: four share/export actions in a 2×2 grid + a small back ---- */
+/* ---- final step: Save + Minecraft side by side + a small back ---- */
 .foot-share { gap: 10px; }
 .share-grid {
   flex: 1 1 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
   min-width: 0; max-width: 420px;
 }
 .share-grid .cta {
-  width: 100%; font-size: 16px; padding: 13px 10px; border-radius: 14px;
+  width: 100%; font-size: 16px; padding: 14px 10px; border-radius: 14px;
   display: flex; align-items: center; justify-content: center; gap: 6px;
 }
 .back-mini {
@@ -208,16 +208,8 @@ body { overflow-x: hidden; }
   box-shadow: 0 3px 0 var(--line);
 }
 .back-mini:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--line); }
-.wa-btn { background: #25d366; border-color: #1aa851; box-shadow: 0 4px 0 #128c4e; }
-.wa-btn:active { box-shadow: 0 1px 0 #128c4e; }
-.share-btn { background: #4a90d9; border-color: #3a78ba; box-shadow: 0 4px 0 #2f6098; }
-.share-btn:active { box-shadow: 0 1px 0 #2f6098; }
 .share-grid .mc-btn { box-shadow: 0 4px 0 #4e8038; }
 .share-grid .mc-btn:active { box-shadow: 0 1px 0 #4e8038; }
-
-@media (min-width: 560px) {
-  .share-grid { grid-template-columns: repeat(4, 1fr); max-width: 560px; }
-}
 
 @media (min-width: 640px) {
   .tiles { grid-template-columns: repeat(auto-fill, minmax(134px, 1fr)); }

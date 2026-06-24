@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { preloadAll } from '../raster/assets'
 import { drawDogTo } from '../raster/renderDog'
-import { downloadPhoto, sharePhoto, shareWhatsAppSticker } from '../raster/exportDog'
+import { savePhoto } from '../raster/exportDog'
 import { exportMcpack } from '../raster/minecraftPack'
 import { isIOS } from '../raster/platform'
 import {
@@ -315,9 +315,7 @@ export function Maker() {
           <>
             <button type="button" className="back-mini" onClick={() => setStep((s) => Math.max(0, s - 1))} aria-label="Back">←</button>
             <div className="share-grid">
-              <button type="button" className="cta wa-btn" disabled={saving} onClick={() => run(shareWhatsAppSticker)}>💚 WhatsApp</button>
-              <button type="button" className="cta save-btn" disabled={saving} onClick={() => run(downloadPhoto)}>📷 Save photo</button>
-              <button type="button" className="cta share-btn" disabled={saving} onClick={() => run(sharePhoto)}>📤 Share</button>
+              <button type="button" className="cta save-btn" disabled={saving} onClick={() => run(savePhoto)}>💾 Save dog</button>
               <button type="button" className="cta mc-btn" disabled={saving} onClick={() => setShowMc(true)}>⛏️ Minecraft</button>
             </div>
           </>
