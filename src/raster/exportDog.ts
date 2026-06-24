@@ -1,5 +1,4 @@
 import { renderSticker } from './renderDog'
-import { isIOS } from './platform'
 import type { MakerConfig } from './catalog'
 
 export const STICKER_SIZE = 1024
@@ -60,14 +59,15 @@ export async function deliver(blob: Blob, fname: string, type: string, title: st
 }
 
 /**
- * Save the dog as a transparent PNG.
- * Android/desktop: downloads the file. iOS: opens the share sheet so the user taps "Save Image" (iOS
- * Safari can't download straight to Photos).
+ * Save the dog straight to the device as a transparent PNG — always a direct download (no app-picker
+ * sheet, so it's clearly distinct from the Share/WhatsApp buttons). On Android it lands in Downloads /
+ * the gallery. NOTE: iOS Safari can't write into the Photos library from the web at all (an Apple
+ * restriction) — the download goes to Files; the only route to Photos is Share → "Save Image".
  */
 export async function downloadPhoto(cfg: MakerConfig, imgs: Map<string, HTMLImageElement>): Promise<void> {
   const blob = await toBlob(renderSticker(cfg, imgs, STICKER_SIZE), 'image/png')
   if (!blob) throw new Error('toBlob returned null')
-  await deliver(blob, `${safeName(cfg)}.png`, 'image/png', cfg.name || 'My dog', isIOS ? 'share' : 'download')
+  await deliver(blob, `${safeName(cfg)}.png`, 'image/png', cfg.name || 'My dog', 'download')
 }
 
 /** Share the dog as a PNG via the OS share sheet (any app or contact); fall back to download. */
@@ -78,20 +78,19 @@ export async function sharePhoto(cfg: MakerConfig, imgs: Map<string, HTMLImageEl
 }
 
 /**
- * Share the dog as a WhatsApp sticker-format image (512², transparent, under 100 KB) via the share
- * sheet, so the user can pick WhatsApp. Android gets WebP (the canonical sticker format & smaller); iOS
- * gets PNG because iOS WhatsApp handles a shared WebP poorly. (Adding it to the actual sticker *tray*
- * isn't possible from a web app — that needs a native sticker-pack app.)
+ * Share the dog as a proper WhatsApp sticker: 512², transparent, JUST THE DOG (no grass/ground — a
+ * sticker has no scene), under 100 KB, in WebP (the canonical sticker format). Shared via the OS sheet
+ * so the user picks WhatsApp. WebP falls back to PNG where the browser can't encode it (older Safari) —
+ * still transparent / no background. (Pushing it into WhatsApp's sticker *tray* isn't possible from a
+ * web app; that needs a native sticker-pack app — so it sends as a transparent sticker image to a chat.)
  */
 export async function shareWhatsAppSticker(cfg: MakerConfig, imgs: Map<string, HTMLImageElement>): Promise<void> {
-  const canvas = renderSticker(cfg, imgs, WHATSAPP_SIZE)
+  const canvas = renderSticker({ ...cfg, ground: null }, imgs, WHATSAPP_SIZE)
   let type = 'image/webp'
   let ext = 'webp'
-  let blob: Blob | null = null
-  if (!isIOS) blob = await toBlob(canvas, 'image/webp', 0.92)
+  let blob = await toBlob(canvas, 'image/webp', 0.92)
   if (!blob || blob.type !== 'image/webp') {
-    // iOS, or a browser that can't encode WebP → PNG
-    blob = await toBlob(canvas, 'image/png')
+    blob = await toBlob(canvas, 'image/png') // browser can't encode WebP → transparent PNG
     type = 'image/png'
     ext = 'png'
   }
